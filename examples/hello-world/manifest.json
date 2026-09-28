@@ -1,0 +1,29 @@
+{
+  "manifestFormatVersion": "1.0.0",
+  "id": "hello-world",
+  "baseUrl": "/",
+  "mainFile": "index.html",
+  "name": "Hello World",
+  "icon": "hello-world.svg",
+  "description": "A minimal SketchUp extension that reads model info and creates geometry.",
+  "version": "1.0.0",
+  "creator": "SketchUp Team",
+  "copyright": "2026 Trimble, Inc.",
+  "window": {
+    "type": "floating",
+    "width": 320,
+    "height": 400,
+    "right": 200,
+    "top": 55
+  },
+  "commands": {
+    "open-hello-world": {
+      "title": "Hello World",
+      "description": "A minimal SketchUp extension that reads model info and creates geometry.",
+      "icon": "hello-world.svg"
+    }
+  },
+  "menuItems": [
+    { "type": "item", "commandId": "open-hello-world" }
+  ]
+}

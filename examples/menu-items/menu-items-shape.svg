@@ -1,0 +1,7 @@
+<!-- Copyright 2026 Trimble Inc -->
+<!-- Licensed under the MIT license -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0E416C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 3l9 5-9 5-9-5 9-5z"/>
+  <path d="M3 8v8l9 5 9-5V8"/>
+  <path d="M12 13v8"/>
+</svg>

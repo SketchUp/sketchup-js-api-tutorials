@@ -1,0 +1,29 @@
+{
+  "manifestFormatVersion": "1.0.0",
+  "id": "server-hosted",
+  "baseUrl": "https://example.com/my-jsa-extension/",
+  "mainFile": "index.html",
+  "name": "Server Hosted",
+  "icon": "PATH/TO/YOUR/ICON.svg",
+  "description": "An extension whose files are served from a web server instead of a zip.",
+  "version": "1.0.0",
+  "creator": "SketchUp Team",
+  "copyright": "2026 Trimble, Inc.",
+  "window": {
+    "type": "floating",
+    "width": 320,
+    "height": 400,
+    "right": 200,
+    "top": 55
+  },
+  "commands": {
+    "open-server-hosted": {
+      "title": "Server Hosted",
+      "description": "Open the panel and report which origin served it.",
+      "icon": "PATH/TO/YOUR/ICON.svg"
+    }
+  },
+  "menuItems": [
+    { "type": "item", "commandId": "open-server-hosted" }
+  ]
+}

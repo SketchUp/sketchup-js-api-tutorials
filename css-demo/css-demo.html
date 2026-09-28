@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2026 Trimble Inc
+  Licensed under the MIT license
+-->
+<html>
+  <head>
+    <title>SketchUp Extension CSS Demo</title>
+
+    <!-- include the css file, and your HTML will look a bit more Sketchuppy. -->
+    <link rel="stylesheet" href="https://cdn.habitat.sketchup.com/dist/experimental/css/latest/sketchup-extension.css">
+  </head>
+  <body>
+
+    <h1>Welcome &lt;h1&gt;</h1>
+    <p>This is an example of
+      <a href="https://cdn.habitat.sketchup.com/dist/experimental/css/latest/sketchup-extension.css" target="_blank">sketchup-extension.css</a>,
+      a tiny css file that makes your extensions look like they belong
+      inside of SketchUp.</p>
+    <ul>
+      <li><strong>Short CSS file</strong>, easy to read and adjust.</li>
+      <li><strong>Powered via normal HTML</strong> tags.</li>
+    </ul>
+
+    <p>Open this <a href="css-demo.html" target="_blank">page in a new tab</a>
+      to inspect how it works, or scroll down to see it in action.</p>
+
+    <hr>
+
+    <h4>Modus Components</h4>
+    <p>If you're using a web framework like Angular, React, or Vue, this css file
+      may not be for you. Check out the
+      <a href="https://modus-web-components-v2.trimble.com/" target="_blank">Modus
+      Project</a> for Trimble-standard UI widgets.</p>
+    <hr>
+
+    <h2>Typography &lt;h2&gt;</h2>
+    <h3>Headline &lt;h3&gt;</h3>
+    <h4>Headline &lt;h4&gt;</h4>
+    <h5>Headline &lt;h5&gt;</h5>
+    <h6>Headline &lt;h6&gt;</h6>
+    <p>This is a &lt;p&gt; tag, a paragraph. It has standard sizing and line spacing.</p>
+    <p>Pararaphs are great for sharing longer blocks of text that wrap to many lines.</p>
+
+    <blockquote>This is a &lt;blockquote&gt; tag, indented 18px.</blockquote>
+
+    <p>Use &lt;pre&gt; for code blocks:</p>
+<pre>function hello(name) {
+  console.log(`Hello, ${name}!`);
+}</pre>
+
+    <button>&lt;button&gt; tag</button>
+
+    <a class="button" href="https://trimble.com" target="_blank">&lt;a class="button"&gt;</a>
+
+    <hr>
+    <h3>Articles</h3>
+    <p>Use the &lt;article&gt; tag for callout-style blocks.</p>
+    <article>
+      <p>This is an &lt;article&gt; tag. It's styled like the SketchUp
+        engagement popups &mdash; dark blue with white text.</p>
+      <button>Article Button</button>
+    </article>
+
+    <hr>
+    <h3>Info Box</h3>
+    <p>Use <code>&lt;details class="info"&gt;</code> for a collapsible info callout.
+      When open it looks like an article. Click the X to collapse it to a (?) icon.</p>
+    <details class="info" open>
+      <summary>About This Extension</summary>
+      This is a collapsible info box. It uses the native &lt;details&gt; tag
+      with a <code>class="info"</code>. Click the X icon to collapse it, then
+      click the (?) icon to expand it again.
+    </details>
+
+    <hr>
+    <p>The lines above and below this are &lt;hr&gt; tags.</p>
+    <hr>
+    Example of bulleted lists with &lt;ul&gt; tags:
+    <ul>
+      <li>First &lt;li&gt;</li>
+      <li>Second</li>
+      <li>Third</li>
+    </ul>
+    And numbered lists with &lt;ol&gt; tags:
+    <ol>
+      <li>First &lt;li&gt;</li>
+      <li>Second</li>
+      <li>Third</li>
+    </ol>
+
+    <hr>
+    <h3>Tabs</h3>
+    <p>Create <strong>icon tabs</strong> using the &lt;menu&gt; tag. Make items selected
+    with &lt;li class="selected"&gt;.</p>
+    <menu>
+        <li class="selected">
+          <img src="img/home.svg" title="My Extensions">
+        </li>
+        <li>
+          <img src="img/add.svg" title="Add">
+        </li>
+        <li>
+          <img src="img/instructor.svg" title="Help and Feedback">
+        </li>
+    </menu>
+
+    <hr>
+    <h3>Image Buttons</h3>
+    <p>Use &lt;img class="button"&gt; to make an image act as a 24px sized button.
+      Add the <code>disabled</code> class to grey them out.</p>
+    <img class="button" src="img/home.svg" title="Home">
+    <img class="button" src="img/add.svg" title="Add">
+    <img class="button" src="img/instructor.svg" title="Help">
+    <img class="button disabled" src="img/home.svg" title="Home (disabled)">
+    <img class="button disabled" src="img/add.svg" title="Add (disabled)">
+    <img class="button disabled" src="img/instructor.svg" title="Help (disabled)">
+
+    <hr>
+    <h3>Accordions</h3>
+    <p>Create <strong>accordions</strong> using the &lt;details&gt; tag.</p>
+
+    <details>
+      <summary>Accordion One</summary>
+      <p>Some content that can be hidden<p>
+    </details>
+    <hr>
+    <details>
+      <summary>Accordion Two</summary>
+      <p>Some content that can be hidden<p>
+    </details>
+    <hr>
+    <details>
+      <summary>Accordion Three</summary>
+      <p>Some content that can be hidden<p>
+    </details>
+
+    <hr>
+    <h3>Forms</h3>
+
+    <form>
+      <input type="search" placeholder="input type=&quot;search&quot;">
+
+      <label for="name">Form label &lt;label&gt;
+         <input type="text" value="text">
+      </label>
+
+      <label>Textarea &lt;textarea&gt;
+        <textarea rows="3" placeholder="Type something..."></textarea>
+      </label>
+
+      <div class="columns">
+        <div>
+          <label>Number
+            <input type="number" value="42">
+          </label>
+        </div>
+        <div>
+          <label>Date
+            <input type="date" value="1/21/2026">
+          </label>
+        </div>
+      </div>
+
+      <label>Select &lt;select&gt;
+        <select>
+          <option>Option One</option>
+          <option selected>Option Two</option>
+          <option>Option Three</option>
+        </select>
+      </label>
+
+      <div class="columns">
+        <div>
+          <button class="secondary">.secondary</button>
+        </div>
+        <div>
+          <button disabled>disabled</button>
+        </div>
+      </div>
+      <hr>
+      <label>
+        <input type="checkbox" role="switch"> Checkbox with role="switch"
+      </label>
+      <hr>
+      <input type="submit" value="submit">
+
+    </form>
+
+    <footer>Footer &lt;footer&gt;</footer>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+/*
+ * Copyright 2026 Trimble Inc
+ * Licensed under the MIT license
+ */
+
+/**
+ * menu-items.css — Styles specific to the Menu Items example.
+ *
+ * The shared sketchup-extension.css stylesheet handles buttons, typography and
+ * colors. This file only adds what that stylesheet doesn't cover: the log list.
+ */
+
+/* Command log: newest entry on top, no list markers. */
+#log {
+  list-style: none;
+  margin: 4px 0 12px;
+  padding: 0;
+}
+
+#log li {
+  border-top: 1px solid #ddd;
+  padding: 6px 0;
+}
+
+#log li:first-child {
+  border-top: none;
+}
+
+/* Timestamp ahead of the commandId. */
+.stamp {
+  color: #777;
+  margin-right: 6px;
+}
+
+/* Secondary lines under a log entry. */
+.detail {
+  color: #555;
+  margin-top: 2px;
+}
+
+/* Error messages. */
+.error {
+  color: #c0392b;
+}

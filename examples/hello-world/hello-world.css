@@ -1,0 +1,23 @@
+/*
+ * Copyright 2026 Trimble Inc
+ * Licensed under the MIT license
+ */
+
+/**
+ * hello-world.css — Styles specific to the Hello World example.
+ *
+ * The shared sketchup-extension.css stylesheet handles buttons, typography and
+ * colors. This file only adds what that stylesheet doesn't cover.
+ */
+
+/* Output blocks: wrap long JSON rather than forcing a horizontal scrollbar. */
+pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 8px 0;
+}
+
+/* Error messages. */
+.error {
+  color: #c0392b;
+}

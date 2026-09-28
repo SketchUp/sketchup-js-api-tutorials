@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2026 Trimble Inc
+  Licensed under the MIT license
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Menu Items</title>
+
+  <!--
+    Menu Items — A tour of every menu entry type a JSA extension can declare.
+
+    As with the other examples, this file is deliberately thin: it loads the
+    shared stylesheet, loads the JSA SDK, and hands off to menu-items.js.
+    The interesting part of this example is manifest.json.
+
+    To install: zip this folder and drag the .zip into the Extension Manager.
+  -->
+
+  <!-- Default SketchUp styles (buttons, typography, colors). Optional but recommended. -->
+  <link rel="stylesheet" href="https://cdn.habitat.sketchup.com/dist/experimental/css/latest/sketchup-extension.css">
+
+  <!-- Styles specific to this extension. -->
+  <link rel="stylesheet" href="./menu-items.css">
+
+  <!-- The JSA SDK — this gives you the global "SketchUpApi" object. -->
+  <script type="application/javascript" src="https://cdn.habitat.sketchup.com/dist/sketchup-js-api/v2/sketchup-js-api.min.js"></script>
+
+  <!-- Our extension's logic. Loaded as a module so it can use top-level await. -->
+  <script type="module" src="./menu-items.js"></script>
+</head>
+<body>
+</body>
+</html>

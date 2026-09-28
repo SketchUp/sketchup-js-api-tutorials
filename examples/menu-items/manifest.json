@@ -1,0 +1,63 @@
+{
+  "manifestFormatVersion": "1.0.0",
+  "id": "menu-items",
+  "baseUrl": "/",
+  "mainFile": "index.html",
+  "name": "Menu Items",
+  "icon": "menu-items.svg",
+  "description": "A tour of every menu entry type: items, dividers, and nested submenus.",
+  "version": "1.0.0",
+  "creator": "SketchUp Team",
+  "copyright": "2026 Trimble, Inc.",
+  "window": {
+    "type": "floating",
+    "width": 320,
+    "height": 520,
+    "right": 200,
+    "top": 55
+  },
+  "commands": {
+    "open-panel": {
+      "title": "Show Command Log",
+      "description": "Open the panel that logs each command as it arrives.",
+      "icon": "menu-items.svg"
+    },
+    "draw-box": {
+      "title": "Draw a Box",
+      "description": "Create a 100 inch cube.",
+      "icon": "menu-items-shape.svg"
+    },
+    "draw-pyramid": {
+      "title": "Draw a Pyramid",
+      "description": "Create a square pyramid 100 inches tall.",
+      "icon": "menu-items-shape.svg"
+    }
+  },
+  "menuItems": [
+    {
+      "type": "subMenu",
+      "title": "Menu Items Example",
+      "menuItems": [
+        { "type": "item", "commandId": "open-panel" },
+        { "type": "divider" },
+        { "type": "item", "commandId": "draw-box" },
+        {
+          "type": "subMenu",
+          "title": "More Shapes",
+          "menuItems": [
+            { "type": "item", "commandId": "draw-pyramid" },
+            { "type": "divider" },
+            {
+              "type": "subMenu",
+              "title": "Again",
+              "menuItems": [
+                { "type": "item", "commandId": "draw-box" },
+                { "type": "item", "commandId": "draw-pyramid" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2026 Trimble Inc
+  Licensed under the MIT license
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Toolbar Headless</title>
+
+  <!--
+    Toolbar Headless — A headless extension driven entirely by tool buttons.
+
+    There is no visible UI here, so this file is thinner than the other
+    examples: no stylesheet, and nothing ever gets appended to <body>. The
+    page exists only to host the script that listens for those commands.
+
+    All user interaction happens through SketchUpApi.ui.getModalInput(),
+    which asks SketchUp to draw a native dialog for us.
+
+    To install: zip this folder and drag the .zip into the Extension Manager.
+  -->
+
+  <!-- The JSA SDK — this gives you the global "SketchUpApi" object. -->
+  <script type="application/javascript" src="https://cdn.habitat.sketchup.com/dist/sketchup-js-api/v2/sketchup-js-api.min.js"></script>
+
+  <!-- Our extension's logic. Loaded as a module so it can use top-level await. -->
+  <script type="module" src="./toolbar-headless.js"></script>
+</head>
+<body>
+</body>
+</html>

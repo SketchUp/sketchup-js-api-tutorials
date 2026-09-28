@@ -1,0 +1,7 @@
+<!-- Copyright 2026 Trimble Inc -->
+<!-- Licensed under the MIT license -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0E416C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Square pyramid seen from a corner: silhouette plus the front vertical edge. -->
+  <path d="M12 2.5l9 14.5-9 4.5-9-4.5 9-14.5z"/>
+  <path d="M12 2.5v19"/>
+</svg>

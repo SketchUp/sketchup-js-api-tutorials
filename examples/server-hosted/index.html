@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2026 Trimble Inc
+  Licensed under the MIT license
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Server Hosted</title>
+
+  <!--
+    Server Hosted — the page your web server serves.
+
+    Unlike the other examples, this file never travels inside a zip. You install
+    a manifest whose baseUrl points at your server, and SketchUp fetches this
+    page — and every relative asset beside it — from there.
+
+    So this folder is what you deploy. The manifest is what you install.
+  -->
+
+  <!-- Default SketchUp styles. Comes from the CDN, not your server. -->
+  <link rel="stylesheet" href="https://cdn.habitat.sketchup.com/dist/experimental/css/latest/sketchup-extension.css">
+
+  <!-- The JSA SDK — also from the CDN. -->
+  <script type="application/javascript" src="https://cdn.habitat.sketchup.com/dist/sketchup-js-api/v2/sketchup-js-api.min.js"></script>
+
+  <!-- Our extension's logic. Resolved against baseUrl, so your server serves it. -->
+  <script type="module" src="./server-hosted.js"></script>
+</head>
+<body>
+</body>
+</html>

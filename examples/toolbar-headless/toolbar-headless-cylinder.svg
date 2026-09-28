@@ -1,0 +1,9 @@
+<!-- Copyright 2026 Trimble Inc -->
+<!-- Licensed under the MIT license -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0E416C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Top face in full, sides, then only the visible front half of the base. -->
+  <ellipse cx="12" cy="6" rx="7.5" ry="3.5"/>
+  <path d="M4.5 6v12"/>
+  <path d="M19.5 6v12"/>
+  <path d="M4.5 18a7.5 3.5 0 0 0 15 0"/>
+</svg>

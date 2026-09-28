@@ -1,0 +1,49 @@
+{
+  "manifestFormatVersion": "1.0.0",
+  "id": "toolbar-headless",
+  "baseUrl": "/",
+  "mainFile": "index.html",
+  "name": "Toolbar Headless",
+  "icon": "toolbar-headless.svg",
+  "description": "A headless extension that adds three tool buttons: draw a cube, a cylinder, or a pyramid.",
+  "version": "1.0.0",
+  "creator": "SketchUp Team",
+  "copyright": "2026 Trimble, Inc.",
+  "window": {
+    "type": "headless"
+  },
+  "commands": {
+    "draw-cube": {
+      "title": "Draw a Cube",
+      "description": "Ask for a height, then draw a cube with that edge length.",
+      "icon": "toolbar-headless-cube.svg"
+    },
+    "draw-cylinder": {
+      "title": "Draw a Cylinder",
+      "description": "Ask for a height, then draw a 100 inch wide cylinder that tall.",
+      "icon": "toolbar-headless-cylinder.svg"
+    },
+    "draw-pyramid": {
+      "title": "Draw a Pyramid",
+      "description": "Ask for a height, then draw a square pyramid that tall.",
+      "icon": "toolbar-headless-pyramid.svg"
+    },
+    "where-are-my-tools": {
+      "title": "Toolbar Headless",
+      "description": "Explain where to find this extension's three tool buttons."
+    }
+  },
+  "toolbars": [
+    {
+      "title": "Shapes",
+      "toolbarItems": [
+        { "type": "item", "commandId": "draw-cube" },
+        { "type": "item", "commandId": "draw-cylinder" },
+        { "type": "item", "commandId": "draw-pyramid" }
+      ]
+    }
+  ],
+  "menuItems": [
+    { "type": "item", "commandId": "where-are-my-tools" }
+  ]
+}
