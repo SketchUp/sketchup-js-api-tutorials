@@ -1,0 +1,26 @@
+{
+  "manifestFormatVersion": "1.0.0",
+  "id": "sidebar-panel",
+  "baseUrl": "/",
+  "mainFile": "index.html",
+  "name": "Sidebar Panel",
+  "icon": "sidebar-panel.svg",
+  "description": "A docked sidebar panel that logs each selection change while you work.",
+  "version": "1.0.0",
+  "creator": "SketchUp Team",
+  "copyright": "2026 Trimble, Inc.",
+  "window": {
+    "type": "sidebar",
+    "height": 400
+  },
+  "commands": {
+    "open-sidebar-panel": {
+      "title": "Sidebar Panel",
+      "description": "A docked sidebar panel that logs each selection change while you work.",
+      "icon": "sidebar-panel.svg"
+    }
+  },
+  "menuItems": [
+    { "type": "item", "commandId": "open-sidebar-panel" }
+  ]
+}

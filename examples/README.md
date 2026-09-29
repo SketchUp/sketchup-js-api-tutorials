@@ -10,6 +10,8 @@ drag into the SketchUp Web Extension Manager.
 | **hello-world**      | Minimal extension. Loads the SDK and stylesheet, reads model info, and creates geometry. Everything runs from the installed zip.                                           |
 | **menu-items**       | A tour of every menu entry type — items, dividers, and nested submenus — all gathered under one root menu, with a panel that logs each command as it fires.                |
 | **toolbar-headless** | A headless extension — no UI of its own. Three tool buttons draw a cube, cylinder, or pyramid, asking for a height through SketchUp's native modal input dialog.           |
+| **modal-form**       | A modal window — centered, and blocking the model until closed — with a form that draws a box of the size entered.                                                       |
+| **sidebar-panel**    | A panel docked in SketchUp's sidebar, beside the model rather than over it, that logs each selection change.                                                              |
 | **server-hosted**    | Your files served from a web server — localhost while developing, or your own host in production — instead of from a zip. Installs a bare manifest rather than an archive. |
 
 All of these except `server-hosted` are self-contained: the zip carries

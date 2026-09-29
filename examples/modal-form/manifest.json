@@ -1,0 +1,27 @@
+{
+  "manifestFormatVersion": "1.0.0",
+  "id": "modal-form",
+  "baseUrl": "/",
+  "mainFile": "index.html",
+  "name": "Modal Form",
+  "icon": "modal-form.svg",
+  "description": "A modal window with an HTML form that draws a box of the size you enter.",
+  "version": "1.0.0",
+  "creator": "SketchUp Team",
+  "copyright": "2026 Trimble, Inc.",
+  "window": {
+    "type": "modal",
+    "width": 360,
+    "height": 420
+  },
+  "commands": {
+    "open-modal-form": {
+      "title": "Modal Form",
+      "description": "A modal window with an HTML form that draws a box of the size you enter.",
+      "icon": "modal-form.svg"
+    }
+  },
+  "menuItems": [
+    { "type": "item", "commandId": "open-modal-form" }
+  ]
+}
