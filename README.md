@@ -52,6 +52,8 @@ Working extension examples demonstrating different patterns:
 - [`hello-world/`](./examples/hello-world/) — Minimal extension with model info + geometry creation
 - [`menu-items/`](./examples/menu-items/) — Every menu entry type: items, dividers, nested submenus, one root menu
 - [`toolbar-headless/`](./examples/toolbar-headless/) — A headless extension that adds three tool buttons, asking for input via SketchUp's native modal dialog
+- [`modal-form/`](./examples/modal-form/) — A modal window with a form: centered, and blocking the model until closed
+- [`sidebar-panel/`](./examples/sidebar-panel/) — A panel docked in the sidebar that logs selection changes
 - [`server-hosted/`](./examples/server-hosted/) — Files served from a web server instead of a zip: localhost while developing, your own host in production
 
 Most examples include a ready-to-install `.zip` file — drag it into Extension Manager to try it immediately. `server-hosted` is the exception: you install its manifests directly.

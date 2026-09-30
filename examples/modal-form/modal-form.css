@@ -1,0 +1,17 @@
+/*
+ * Copyright 2026 Trimble Inc
+ * Licensed under the MIT license
+ */
+
+/**
+ * modal-form.css — Styles specific to the Modal Form example.
+ *
+ * The shared sketchup-extension.css stylesheet handles buttons, typography,
+ * colors and form controls. This file only adds what that stylesheet doesn't
+ * cover.
+ */
+
+/* Error messages. */
+.error {
+  color: #c0392b;
+}

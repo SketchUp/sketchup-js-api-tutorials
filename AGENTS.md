@@ -38,6 +38,8 @@ folder's README explains what it demonstrates.
 | [`hello-world`](./examples/hello-world/)           | Anything with a panel. Reads model info, writes geometry. Everything ships in the zip.       |
 | [`menu-items`](./examples/menu-items/)             | The extension needs a real menu — submenus, dividers, its own root heading                   |
 | [`toolbar-headless`](./examples/toolbar-headless/) | The extension needs tool buttons, or has no UI of its own and asks questions via native dialogs |
+| [`modal-form`](./examples/modal-form/)             | The extension needs a blocking dialog built from its own HTML                                |
+| [`sidebar-panel`](./examples/sidebar-panel/)       | The extension is a panel docked beside the model                                             |
 | [`server-hosted`](./examples/server-hosted/)       | The extension is served from the user's own server — a local dev server, or a host they deploy to and update without reinstalls |
 
 ## Conventions to match
