@@ -19,5 +19,5 @@ pre {
 
 /* Error messages. */
 .error {
-  color: #c0392b;
+  color: light-dark(#c0392b, #ff8a7a);
 }
