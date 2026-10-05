@@ -28,12 +28,13 @@ this one — see `examples/hello-world/hello-world.css` for a small example.
 - `.selected` for list selection state
 - Font size custom properties (`--font-size-base` and friends) you can override
   in your own stylesheet without editing this one
-- Light and dark mode, following SketchUp's appearance
+- Dark mode, on hosts that have a dark appearance
 
 ## Colors and dark mode
 
-Every color comes from a `--su-*` custom property that has a light and a dark
-value: `--su-bg`, `--su-bg-surface`, `--su-bg-header`, `--su-bg-hover`,
+Pages are light, except on hosts that have a dark appearance, where they
+follow SketchUp's setting. Every color comes from a `--su-*` custom property
+that has a light and a dark value: `--su-bg`, `--su-bg-surface`, `--su-bg-header`, `--su-bg-hover`,
 `--su-bg-selected`, `--su-text`, `--su-text-secondary`, `--su-text-accent`,
 `--su-link`, `--su-border` and `--su-border-subtle`. Use them in your own
 stylesheet so your styles switch along with it:
@@ -48,10 +49,12 @@ For a color the variables don't cover, use `light-dark()`:
 .error { color: light-dark(#c0392b, #ff8a7a); }
 ```
 
-Images aren't recolored. `css-demo.html` shows one way to lighten navy icons
-on a dark background. For anything drawn from JavaScript, such as a canvas,
-check `matchMedia('(prefers-color-scheme: dark)')` and listen for its `change`
-event.
+`light-dark()` only takes colors, so anything else, such as lightening navy
+`<img>` icons, needs a rule that applies under the same conditions as the
+stylesheet's dark mode. `css-demo.html` shows how, and
+[Dark mode](https://docs.sketchup.com/sketchup/jsa/latest/jsa/welcome/extension/#dark-mode)
+in the JSA docs covers the JavaScript equivalent and pages that don't use this
+stylesheet.
 
 To keep an extension light-only, add this to your stylesheet:
 
@@ -60,8 +63,8 @@ To keep an extension light-only, add this to your stylesheet:
 ```
 
 It must be in your stylesheet: a `<meta name="color-scheme">` tag is
-overridden by this one. A light-only page should not key anything off
-`prefers-color-scheme`, which still reports SketchUp's appearance.
+overridden by this one. A light-only page should also leave out dark-only
+rules like the one in `css-demo.html`.
 
 ## Visual Reference
 

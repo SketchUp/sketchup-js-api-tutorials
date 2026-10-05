@@ -348,7 +348,7 @@ See `../css-demo/README.md` for what the shared stylesheet covers, and
 4. **Base font size is 12px** — Keep text small and consistent
 5. **Don't use `<header>`** — The containing window already displays the extension's name
 6. **Minimize custom CSS** — Use the built-in classes, add only what's truly needed
-7. **Don't hard-code colors** — Pages follow SketchUp's light or dark appearance. Use the
+7. **Don't hard-code colors** — Pages can be dark on hosts with a dark appearance. Use the
    `--su-*` variables (`var(--su-text-secondary)`, `var(--su-border)`, ...) or
    `light-dark(<light>, <dark>)` for your own colors. Navy `<img>` icons need a dark-mode
    treatment too; see `../css-demo/css-demo.html`. To keep an extension light-only, add
