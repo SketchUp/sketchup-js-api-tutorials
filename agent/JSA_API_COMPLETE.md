@@ -5,6 +5,10 @@ Optimized for AI agent consumption — minimal prose, maximum signal.
 
 For usage recipes and code examples, see `JSA_RECIPES.md` in this folder.
 
+Official docs: the [API Reference](https://developer.trimble.com/docs/sketchup/jsa/api/overview/) (every class, with full
+signatures) and [Naming](https://developer.trimble.com/docs/sketchup/jsa/welcome/naming/) (the conventions behind async
+methods, operations and lookups).
+
 ---
 
 ## Critical Rules
@@ -242,6 +246,7 @@ scene.getHiddenTags(filter?) → Tag[]
 ```
 
 **Camera construction:**
+
 ```
 Camera.default()
   .setOrientation(eye, target, up)  ← eye/target are [x,y,z], up is [0,0,1] typically
@@ -438,6 +443,7 @@ op.entitiesApplyTransformation(container, transform, filter?) → void  ← tran
 ```
 
 Builder example pattern:
+
 ```
 await op.createBuilder((builder) => {
   return faces.map(pts => builder.createFace(pts));

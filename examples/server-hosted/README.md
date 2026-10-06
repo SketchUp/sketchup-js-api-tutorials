@@ -28,7 +28,8 @@ Extension Manager's upload area. Don't zip it.
 1. **Serve this folder over HTTPS on port 9000.** HTTPS is not optional —
    SketchUp Web is served over HTTPS, and browsers block an HTTPS page from
    loading `http://` resources, so a plain-HTTP server will silently fail to
-   load. The official docs have a ready-made `mkcert` + Python recipe.
+   load. The official docs have a ready-made
+   [`mkcert` + Python recipe](https://developer.trimble.com/docs/sketchup/jsa/welcome/local-development/).
 2. Drag `manifest-localhost.json` onto the Extension Manager.
 3. Open **Extensions > Server Hosted**. The panel reports the origin that served
    it — if that says `https://localhost:9000`, `baseUrl` is working.
@@ -46,8 +47,9 @@ Same thing with a different `baseUrl`:
 `https://example.com/my-jsa-extension/` is a placeholder — example.com is a real
 site reserved for documentation, but it won't serve JSA code, of course.
 
-Your server also needs to allow embedding in SketchUp's iframe and send CORS
-headers, or assets like your icon won't load.
+Your server also needs to allow embedding in SketchUp's iframe and send
+[CORS headers](https://developer.trimble.com/docs/sketchup/jsa/welcome/local-development/#cors-troubleshooting), or assets
+like your icon won't load.
 
 The payoff: your code lives on infrastructure you control, so you can ship
 updates without users reinstalling anything. Bump `version` in the manifest only
@@ -64,3 +66,7 @@ from your server. It is not read out of any archive.
 Point it at `server-hosted.svg` once you're serving this folder, or at your own
 file. A missing icon is harmless — the field is optional and SketchUp just
 renders no image.
+
+## Learn more
+
+- [Local Development](https://developer.trimble.com/docs/sketchup/jsa/welcome/local-development/) — why HTTPS, creating certificates, a Python CORS server, and CORS troubleshooting

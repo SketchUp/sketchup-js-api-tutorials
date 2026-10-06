@@ -49,3 +49,8 @@ window.addEventListener('pagehide', () => handle.stop());
 
 The handle is returned synchronously, so don't `await` it. Call `stop()` when
 you're done, or SketchUp keeps sending changes.
+
+## Learn more
+
+- [The Manifest: window](https://developer.trimble.com/docs/sketchup/jsa/welcome/manifest/#window) — every window type and the sizing fields each one takes
+- [Selection examples](https://developer.trimble.com/docs/sketchup/jsa/examples/selection/) — getting, filtering, streaming and changing the selection

@@ -4,6 +4,8 @@ When the user asks to create a new JSA extension, guide them through the process
 below. The end result is a ZIP file they can drag into the SketchUp Web Extension
 Manager to install.
 
+Official docs: [Creating an extension](https://developer.trimble.com/docs/sketchup/jsa/welcome/extension/).
+
 ---
 
 ## Step 1: Extension Name

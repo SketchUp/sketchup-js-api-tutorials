@@ -3,6 +3,13 @@
 Agent-friendly documentation and working examples for building SketchUp Web
 extensions with the SketchUp JavaScript API (JSA).
 
+The official documentation lives at
+[developer.trimble.com](https://developer.trimble.com/docs/sketchup/jsa/welcome/) — guides, tutorials and the full API
+reference. This repo is its companion: clone it and experiment.
+
+New to SketchUp development? Learn about the developer program and sign up at
+[developer.sketchup.com](https://developer.sketchup.com/).
+
 Looking for the Ruby API instead? See
 [sketchup-ruby-api-tutorials](https://github.com/SketchUp/sketchup-ruby-api-tutorials).
 
@@ -22,11 +29,14 @@ claude
 conventions to follow, so it will read the reference docs in `agent/`, copy the
 closest example, and produce a working extension you can install in SketchUp.
 (Claude Code picks this up via `CLAUDE.md`; Cursor, Codex and others read
-`AGENTS.md` directly.)
+`AGENTS.md` directly.) For a full walkthrough, see the
+[Build with Claude Code](https://developer.trimble.com/docs/sketchup/jsa/tutorials/claude-code/) tutorial.
 
 Prefer to read rather than generate? Start with
 [`examples/hello-world/`](./examples/hello-world/) — it's about 130 lines of
 commented JavaScript that covers both reading from and writing to the model.
+The docs walk through the same ground step by step, in
+[plain JS/HTML](https://developer.trimble.com/docs/sketchup/jsa/tutorials/hand-coded/)
 
 ## Contents
 
@@ -83,6 +93,9 @@ If you have an example of your own that you think would be useful, open a pull
 request and follow the conventions of the existing examples (see
 [`examples/README.md`](./examples/README.md)). Corrections and clarifications to
 the docs are equally welcome — open an issue or a PR.
+
+Questions about the API itself, or have a bug to report?
+See [Get Help](https://developer.trimble.com/docs/sketchup/jsa/welcome/help/) for ways to contact the team.
 
 ## License
 

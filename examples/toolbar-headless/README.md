@@ -133,3 +133,7 @@ await SketchUpApi.connect();
 Swap those two lines and the first click does nothing. This is also why a
 headless extension doesn't need `loadAtLaunch`.
 
+## Learn more
+
+- [The Manifest: window](https://developer.trimble.com/docs/sketchup/jsa/welcome/manifest/#window) — every window type, headless included
+- [The Manifest: toolbars](https://developer.trimble.com/docs/sketchup/jsa/welcome/manifest/#toolbars) — the full toolbar field reference

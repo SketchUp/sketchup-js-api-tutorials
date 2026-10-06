@@ -91,3 +91,6 @@ await model.performOperation((op) => {
 }, 'Draw a Box');
 ```
 
+## Learn more
+
+- [The Manifest: commands](https://developer.trimble.com/docs/sketchup/jsa/welcome/manifest/#commands) and [menu items](https://developer.trimble.com/docs/sketchup/jsa/welcome/manifest/#menu-items) — the full field reference

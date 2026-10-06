@@ -4,7 +4,9 @@ This file contains examples to help you (or Claude, or Gemini, or whoever) write
 your first JSA code. It's not meant to be exhaustive documentation, more like a
 set of LLM-friendly recipes.
 
-For more complete docs, see the official JSA documentation.
+For more complete docs, see the [official JSA documentation](https://developer.trimble.com/docs/sketchup/jsa/welcome/),
+whose Examples section has a focused page of snippets per topic — for example
+[Selection](https://developer.trimble.com/docs/sketchup/jsa/examples/selection/) or [Materials](https://developer.trimble.com/docs/sketchup/jsa/examples/materials/).
 
 Questions, corrections, or a recipe you'd like to see? Open an issue:
 https://github.com/SketchUp/sketchup-js-api-tutorials/issues
@@ -60,7 +62,9 @@ Best for iterating quickly — edit a file, reload, see the change.
 
 1. Stand up a webpage using whatever stack or framework you prefer, served on a
    local port (say 9000). It must be **HTTPS** — SketchUp Web is HTTPS, and
-   browsers block it from loading `http://` resources.
+   browsers block it from loading `http://` resources. The official
+   [Local Development](https://developer.trimble.com/docs/sketchup/jsa/welcome/local-development/) guide has a ready-made
+   `mkcert` certificate and Python CORS server.
 2. Include the SDK with a script tag (see Installation below).
 3. Write a `manifest.json` whose `baseUrl` points at your dev server, e.g.
    `https://localhost:9000/`.

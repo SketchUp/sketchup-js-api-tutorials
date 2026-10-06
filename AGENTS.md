@@ -11,8 +11,9 @@ suite. An extension is plain HTML/CSS/JS plus a `manifest.json`, zipped.
 ## Read these first
 
 Read them in this order before writing code. They are written for you, not for
-humans, and they are the source of truth — prefer them over your own recall of
-the JSA, which is a small and fast-moving API you likely know poorly.
+humans, as a condensed digest of the [official docs](https://developer.trimble.com/docs/sketchup/jsa/welcome/),
+which are the source of truth. Prefer both over your own recall of the JSA,
+which is a small and fast-moving API you likely know poorly.
 
 | File                                                                       | When                                            |
 | -------------------------------------------------------------------------- | ----------------------------------------------- |
@@ -23,10 +24,11 @@ the JSA, which is a small and fast-moving API you likely know poorly.
 | [`css-demo/README.md`](./css-demo/README.md)                               | When building a visible UI                      |
 
 **If an API isn't in those docs, don't invent it.** Confirm it before you use it
-— the SDK bundle at
-`https://cdn.habitat.sketchup.com/dist/sketchup-js-api/v2/sketchup-js-api.min.js`
-is fetchable and greppable. If you discover something genuinely missing from the
-docs, say so, and offer to add it.
+— first in the official [API Reference](https://developer.trimble.com/docs/sketchup/jsa/api/overview/), then in the SDK
+bundle at
+`https://cdn.habitat.sketchup.com/dist/sketchup-js-api/v2/sketchup-js-api.min.js`,
+which is fetchable and greppable. If you discover something genuinely missing
+from the docs, say so, and offer to add it.
 
 ## Copy an existing example
 
