@@ -38,3 +38,7 @@ One field does it:
 
 A modal is always centered, so it takes a `width` and `height` but no position.
 It blocks the model until the user closes it.
+
+## Learn more
+
+- [The Manifest: window](https://developer.trimble.com/docs/sketchup/jsa/welcome/manifest/#window) — every window type and the sizing fields each one takes

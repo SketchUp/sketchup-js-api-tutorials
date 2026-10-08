@@ -4,6 +4,8 @@ This document describes the manifest format used in `myextensions.json` and in
 ZIP-uploaded extensions' `manifest.json`. Each extension uses the commands-based
 v2 format where actions are defined once and referenced by ID.
 
+Official docs: [The Manifest](https://developer.trimble.com/docs/sketchup/jsa/welcome/manifest/).
+
 ---
 
 ## Complete Example

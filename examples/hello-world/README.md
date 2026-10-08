@@ -52,3 +52,7 @@ await model.performOperation((op) => {
 }, 'Draw a Box');
 ```
 
+## Learn more
+
+- [Creating an extension](https://developer.trimble.com/docs/sketchup/jsa/welcome/extension/) — what goes in an extension bundle
+- [Hand-Coded JS/HTML Extension](https://developer.trimble.com/docs/sketchup/jsa/tutorials/hand-coded/) — building one like this from scratch, step by step

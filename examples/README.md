@@ -19,7 +19,8 @@ everything and the extension runs entirely from it.
 
 ## Installing
 
-1. Open [SketchUp Web JSA Labs](https://jsa-labs.sketchup.com)
+1. Open SketchUp Web JSA Labs — the link is under
+   [Installing an example](../README.md#installing-an-example) in the main README
 2. **Extensions > Extension Manager**
 3. Drag a file onto the upload area — a `.zip` for most examples, or
    `server-hosted`'s `manifest-*.json`
@@ -79,3 +80,11 @@ These match the conventions used across SketchUp's own JSA examples:
   extensions instead wait for `SketchUpApi.ui.on('<commandId>', ...)`.
 - Headless extensions build no DOM and load no stylesheet — they talk to the user
   through `SketchUpApi.ui.getModalInput()` instead.
+
+## Learn more
+
+These examples are whole extensions. The official docs have more:
+
+- **Examples** — a focused page of snippets per topic, such as [Selection](https://developer.trimble.com/docs/sketchup/jsa/examples/selection/), [Materials](https://developer.trimble.com/docs/sketchup/jsa/examples/materials/) and [Scenes](https://developer.trimble.com/docs/sketchup/jsa/examples/scenes/); the full list is in the docs sidebar
+- [Testing](https://developer.trimble.com/docs/sketchup/jsa/welcome/testing/) — unit-testing your extension's logic with QUnit
+- [Versioning](https://developer.trimble.com/docs/sketchup/jsa/welcome/versioning/) — the API's semantic-versioning and deprecation guarantees

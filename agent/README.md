@@ -4,6 +4,9 @@ These files are optimized for AI agents (Claude, Gemini, etc.) to consume as
 context when generating JSA extensions. Include them in your AI's context window
 to enable it to write working SketchUp extensions.
 
+Looking for docs written for people? The official documentation is at
+[developer.trimble.com](https://developer.trimble.com/docs/sketchup/jsa/welcome/).
+
 ## Files
 
 | File | Purpose |
