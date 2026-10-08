@@ -9,6 +9,16 @@
 
     <!-- include the css file, and your HTML will look a bit more Sketchuppy. -->
     <link rel="stylesheet" href="https://cdn.habitat.sketchup.com/dist/experimental/css/latest/sketchup-extension.css">
+    <style>
+      /* These icons are navy; lighten them on a dark background. */
+      @supports (-webkit-touch-callout: none) {
+        @media (prefers-color-scheme: dark) {
+          menu li img, img.button {
+            filter: invert(1) hue-rotate(180deg);
+          }
+        }
+      }
+    </style>
   </head>
   <body>
 

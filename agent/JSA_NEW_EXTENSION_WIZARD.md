@@ -343,11 +343,16 @@ See `../css-demo/README.md` for what the shared stylesheet covers, and
 ### CSS Pitfalls to Avoid
 
 1. **Don't override the font** — Open Sans with fallback is already configured
-2. **Don't set body background** — It's #f1f1f6 (SketchUp gray), not white
+2. **Don't set body background** — The stylesheet sets it, light or dark
 3. **Buttons are full-width** — That's intentional; don't fight it
 4. **Base font size is 12px** — Keep text small and consistent
 5. **Don't use `<header>`** — The containing window already displays the extension's name
 6. **Minimize custom CSS** — Use the built-in classes, add only what's truly needed
+7. **Don't hard-code colors** — Pages can be dark on hosts with a dark appearance. Use the
+   `--su-*` variables (`var(--su-text-secondary)`, `var(--su-border)`, ...) or
+   `light-dark(<light>, <dark>)` for your own colors. Navy `<img>` icons need a dark-mode
+   treatment too; see `../css-demo/css-demo.html`. To keep an extension light-only, add
+   `:root { color-scheme: light; }` to its stylesheet
 
 ---
 

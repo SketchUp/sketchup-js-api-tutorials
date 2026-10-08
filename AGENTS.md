@@ -56,6 +56,9 @@ samples. A new extension that follows them reads as if it belongs.
   `Licensed under the MIT license`, as a comment in the file's own syntax.
 - **Each extension gets a `README.md`** explaining what it demonstrates and the
   couple of non-obvious things a reader should take away.
+- **Colors come from the shared stylesheet's `--su-*` variables**, or
+  `light-dark()` for anything they don't cover, so the extension works in light
+  and dark mode. No bare hex colors in an extension's own CSS.
 - **Icons are 24×24 SVGs**, `fill="none"`, `stroke="#0E416C"`,
   `stroke-width="1.5"`, round caps and joins.
 - **Command and `subMenu` titles are short — 20 characters or fewer.** The menu
