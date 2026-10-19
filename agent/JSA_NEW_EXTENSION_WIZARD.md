@@ -15,7 +15,8 @@ Ask: **"What do you want your new extension to be called?"**
 Use their answer to derive:
 - `name`: The display name (e.g., "Box Buddy")
 - `id`: Kebab-case ID (e.g., "box-buddy")
-- Folder name: PascalCase (e.g., "BoxBuddy")
+- Folder name: the same kebab-case as the `id` (e.g., "box-buddy"). Every file inside it
+  is named after it too (`box-buddy.js`, `box-buddy.svg`)
 
 ## Step 2: Window Type
 
@@ -63,11 +64,12 @@ Based on their answers, create a folder with the following structure:
 
 ### Folder Structure
 ```
-{FolderName}/
+{extension-id}/
   ├── manifest.json
   ├── index.html
   ├── {extension-id}.js
-  └── {extension-id}.svg
+  ├── {extension-id}.svg
+  └── README.md
 ```
 
 ### manifest.json
@@ -100,8 +102,14 @@ Based on their answers, create a folder with the following structure:
 }
 ```
 
-Note: `baseUrl` is rewritten automatically when you install via ZIP. You can
-leave it as-is — it won't cause problems.
+Notes:
+- Keep `"baseUrl": "/"` for a ZIP. Installing a `.zip` **ignores** `baseUrl`: the
+  files are served from inside the archive. (Installing a bare `manifest.json`
+  that points at your own server is the other way round; see
+  `../examples/server-hosted/`. Never zip a manifest that points at a server.)
+- `width` and `height` apply to `floating`, `modal` and `sidebar` (a sidebar uses
+  only `height`). For `tab` and `headless`, leave them out: `"window": { "type": "headless" }`.
+- Every icon the manifest names must be inside the ZIP, or the install fails.
 
 The manifest above is the minimum. For the full set of fields — `menuItems`
 entry types, `toolbars`, window types, and the `parentMenu` field (which takes
@@ -156,6 +164,10 @@ all the logic and markup in one place.
 
 ### Main JS File (starter template)
 
+Every file carries a license header as a comment in its own syntax. The examples
+in this repo use `Copyright 2026 Trimble Inc` / `Licensed under the MIT license`;
+put your own name or company in yours.
+
 ```javascript
 // Copyright {YEAR} {Your Name or Company}
 // Licensed under the MIT license
@@ -199,8 +211,13 @@ try {
 }
 ```
 
-If the extension is **headless** (no `window` in the manifest), don't connect on
-load. Register the command handler first, then connect:
+If the extension is **headless** (`"window": { "type": "headless" }`), or has
+**several commands that do different things** (a menu item per action, tool
+buttons; see `../examples/menu-items/` and `../examples/toolbar-headless/`),
+register a handler per command **before** connecting. Clicking a menu item or
+tool button is what creates your iframe, so that command is already in flight;
+SketchUp buffers it and replays it only if a handler exists by the time you
+connect:
 
 ```javascript
 SketchUpApi.ui.on('{command-id}', async () => {
@@ -210,8 +227,9 @@ SketchUpApi.ui.on('{command-id}', async () => {
 await SketchUpApi.connect();
 ```
 
-Extensions **with** a window start running as soon as the window opens, so they
-don't need `ui.on` at all.
+A windowed extension with a single command that just opens its panel (like the
+starter template above) starts running as soon as the window opens, so it doesn't
+need `ui.on` at all.
 
 A headless extension has no DOM to show anything in, so don't build one and don't
 load a stylesheet. To talk to the user, use `SketchUpApi.ui.getModalInput()` —
@@ -232,14 +250,20 @@ const height = Number.parseFloat(result.inputStates.height);  // Always a string
 Surface errors the same way — a `console.error()` in a headless extension is
 invisible to the user. See `JSA_RECIPES.md` → "Modal Input" for the full options.
 
+### README.md
+
+Give the extension a short `README.md`: what it does (or demonstrates), and the
+couple of non-obvious things a reader should take away. Keep it a few paragraphs.
+
 ## Step 5: Build the ZIP
 
 Create a ZIP file from the folder contents. Best practice is to put
 `manifest.json` at the root of the ZIP (not nested inside a wrapper folder):
 
 ```bash
-cd {FolderName}
-zip -r ../{FolderName}.zip .
+cd {extension-id}
+zip -rX ../{extension-id}.zip . -x '.DS_Store' '__MACOSX*'
+unzip -Z1 ../{extension-id}.zip   # verify manifest.json is at the root and every icon is listed
 cd ..
 ```
 
@@ -262,8 +286,8 @@ css/
 - Avoid a nested wrapper folder (i.e., don't zip the folder itself — zip the
   contents). This keeps paths clean.
 
-To install: open SketchUp Web → File → Extensions → Extension Manager → drag
-the .zip onto the upload area.
+To install: open [SketchUp Web JSA Labs](https://jsa-labs.sketchup.com) →
+**Extensions > Extension Manager** → drag the `.zip` onto the upload area.
 
 ---
 
@@ -363,6 +387,12 @@ See `../css-demo/README.md` for what the shared stylesheet covers, and
 Ask: **"Tell me what your extension should do. Describe the buttons,
 interactions, all that jazz and I'll do my best to make it."**
 
+If the extension deals in sizes or distances, also ask: **"What units do you
+think in: inches, feet, meters, millimeters?"** The API itself is always inches,
+so for anything else use `SketchUpApi.Length` (`Length.meters(2.5)`,
+`Length.parse(text, model)`) rather than converting by hand. See "Working with
+Units and Length" in `JSA_RECIPES.md`.
+
 Once the user describes what they want, implement it using the JSA API
 documentation provided in `JSA_API_COMPLETE.md` in this folder.
 
@@ -382,11 +412,11 @@ const scenes = await model.getScenes();          // Saved camera views
 // Modify the model (ALL changes must be inside performOperation)
 await model.performOperation(async (op) => {
   const group = op.createGroup(op.model);
-  // Coordinates are [x, y, z] in INCHES. Z is UP.
+  // Coordinates are [x, y, z] in INCHES (or a SketchUpApi.Length). Z is UP.
   const face = op.createFace(group, [
     [0, 0, 0], [100, 0, 0], [100, 100, 0], [0, 100, 0]
   ]);
-  op.facePushPull(face, -100, true);  // Extrude into a 3D box
+  op.facePushPull(face, -100, true);  // Extrude into a 3D box (negative = up from a ground-plane face)
 }, 'Operation Name');  // This label appears in Edit > Undo
 ```
 
@@ -403,7 +433,7 @@ await op.createBuilder((builder) => {
 })
 .onPostBuild((converter, refs) => {
   for (const r of refs) {
-    op.faceSetEdgeProperties(converter.asRef(r), 1, { smooth: true, soft: true });
+    op.faceSetEdgeProperties(converter.asRef(r), SketchUpApi.EdgeUsageType.Shared, { smooth: true, soft: true });
   }
 })
 .build(groupRef);
@@ -426,8 +456,8 @@ so a typo here surfaces as a window in the wrong place rather than an error.
 
 ## Reference Files (in this package)
 
-- **JSA_API_COMPLETE.md** — Full SDK reference with examples for all available methods
+- **JSA_API_COMPLETE.md** — The common API surface: names, parameters and return types
 - **JSA_RECIPES.md** — Common patterns and recipes
 - **JSA_MANIFEST.md** — Detailed manifest format documentation
 - **../css-demo/README.md** — What the shared stylesheet provides, and the class names to use
-- **../examples/** — Working example extensions (hello-world, menu-items, toolbar-headless, server-hosted)
+- **../examples/** — Working example extensions (hello-world, menu-items, toolbar-headless, modal-form, sidebar-panel, server-hosted)
