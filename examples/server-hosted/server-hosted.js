@@ -6,7 +6,7 @@
  *
  * What it does:
  *   Reports which origin served this page, then connects and reads the active
- *   model's name. The origin readout is the point: it proves SketchUp fetched
+ *   model's title. The origin readout is the point: it proves SketchUp fetched
  *   this file from your server rather than from an installed archive.
  *
  * How it works (high-level):
@@ -53,7 +53,7 @@ document.getElementById('origin').textContent =
 try {
   await SketchUpApi.connect();
   const model = await SketchUpApi.getActiveModel();
-  statusDiv.textContent = `Connected. Model: ${model.name || '(unsaved)'}`;
+  statusDiv.textContent = `Connected. Model: ${model.title || '(unsaved)'}`;
 } catch (e) {
   console.error('Server Hosted init error:', e);
   statusDiv.textContent = `Failed to connect to SketchUp: ${e.message}`;

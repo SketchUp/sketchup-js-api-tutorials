@@ -1,8 +1,7 @@
 # Extension Manifest Reference (v2)
 
-This document describes the manifest format used in `myextensions.json` and in
-ZIP-uploaded extensions' `manifest.json`. Each extension uses the commands-based
-v2 format where actions are defined once and referenced by ID.
+This document describes the `manifest.json` format. Each extension uses the
+commands-based v2 format where actions are defined once and referenced by ID.
 
 Official docs: [The Manifest](https://developer.trimble.com/docs/sketchup/jsa/welcome/manifest/).
 
@@ -20,15 +19,15 @@ for learning purposes. Your final manifests will need to be comment free.
   // ─── Identity (required) ───────────────────────────────────────────────────
   "id": "model-health-check", // Unique kebab-case identifier
   "name": "Model Health Check", // Human-readable display name
+  "baseUrl": "/", // "/" for a zip; your server URL when installing a bare manifest.json
   "mainFile": "index.html", // Entry point HTML file
 
   // ─── Metadata & Lifecycle (all optional) ───────────────────────────────────
-  "baseUrl": "/", // Base for resolving relative paths
   "icon": "img/health-check.svg", // Extension icon (relative to baseUrl)
   "disabled": false, // Skip during load
   "loadAtLaunch": true, // Run at startup, before any command is clicked
   "parentMenu": "Extensions", // Which menu to appear under. Four valid values — see below.
-  "loader": "loader-virtual.html", // Custom loader HTML (default: loader.html)
+  "platforms": ["web", "desktop", "ios"], // Which hosts to load on. Omit to support all.
 
   "description": "Run checks on your model health.", // Shown in extension manager
   "version": "1.0.0",
@@ -104,9 +103,16 @@ for learning purposes. Your final manifests will need to be comment free.
 {
   "id": "model-health-check", // Unique kebab-case ID for event routing
   "name": "Model Health Check", // Display name
+  "baseUrl": "/", // Base for resolving relative paths. See below.
   "mainFile": "index.html", // Entry point HTML file
 }
 ```
+
+`baseUrl` is `"/"` for a ZIP: installing a `.zip` **ignores** it and serves the
+files from inside the archive. Installing a bare `manifest.json` **honors** it, so
+point it at your server (for example `https://localhost:9000/`) to load the page
+from there. Never zip a manifest that points at a server; it will silently look
+in the archive instead. See `../examples/server-hosted/`.
 
 Two more are required when installing from a **ZIP**, but optional when an extension
 is loaded from a URL:
@@ -125,12 +131,11 @@ web server would happily resolve a directory to `index.html`. Always set it.
 
 ```jsonc
 {
-  "baseUrl": "/", // Base for relative paths; trailing slash added if missing
   "icon": "img/health-check.svg", // Relative to baseUrl, or absolute URL
   "disabled": false, // Skipped during load
   "loadAtLaunch": true, // Run at startup, before any command is clicked. See below.
   "parentMenu": "Extensions", // "Extensions" (default), "Export", "Import" or "Download"
-  "loader": "loader-virtual.html", // Custom loader HTML (default: loader.html). Use loader-virtual.html for ZIPs.
+  "platforms": ["web", "desktop", "ios"], // Optional. Omit to support every platform.
   "description": "Run checks on your model health.",
   "version": "1.0.0",
   "creator": "Cool Partner",
@@ -214,8 +219,9 @@ by their key in this object. Define each action once; reuse everywhere.
 }
 ```
 
-The command key (e.g. `"open-dashboard"`) is dispatched as the `menuItemId` in
-`extension_menu_action` messages when the user clicks.
+The command key (e.g. `"open-dashboard"`) is the `id` of the `UICommandEvent`
+(`{ id, timestamp }`) delivered to the handler you register with
+`SketchUpApi.ui.on('open-dashboard', handler)` when the user clicks.
 
 **Keep `title` short — aim for 20 characters or fewer.** Titles aren't truncated;
 instead the menu grows to fit the longest one, so a single verbose entry makes a
@@ -280,7 +286,9 @@ importer, exporter or downloader — that's where users look for those.
 
 Three entry types:
 
-- `{ type: "item", commandId }` — Clickable action.
+- `{ type: "item", commandId }` — Clickable action. An item can also carry
+  `checked: true` (as in the official manifest docs' example) for a toggle-style
+  entry.
 - `{ type: "divider" }` — Visual separator.
 - `{ type: "subMenu", title, menuItems[] }` — Nested submenu (recursive).
 
@@ -327,3 +335,15 @@ three identical buttons. A command's `title` becomes the button's tooltip.
 doesn't find its buttons assumes it's broken. A menu item that points them at the
 tool overflow is cheap insurance — see
 `../examples/toolbar-headless/` for one.
+
+### Context Menu Items
+
+```jsonc
+{
+  "contextMenuItems": [{ "type": "item", "commandId": "geometry-report" }],
+}
+```
+
+Same format as `menuItems`, for the right-click menu. **Not implemented yet:** no
+SketchUp host renders `contextMenuItems` today. The field is accepted, then
+ignored, so don't design a workflow around it.

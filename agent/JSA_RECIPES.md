@@ -16,8 +16,8 @@ https://github.com/SketchUp/sketchup-js-api-tutorials/issues
 These examples are NOT exhaustive — the JSA can do far more than what's shown
 here. This file focuses on common recipes and patterns to get you started.
 
-For the complete API surface (every method, grouped by domain), see
-`JSA_API_COMPLETE.md` in this folder.
+For the common API surface (names, parameters and return types, grouped by
+domain), see `JSA_API_COMPLETE.md` in this folder.
 
 ## What is the JSA, from a coding perspective?
 
@@ -111,20 +111,28 @@ The SDK exposes `window.SketchUpApi` as the main entry point.
 
 ## Connection Pattern (Best Practice)
 
-**Always connect on page load:**
+Load your script as a module (`<script type="module" src="./my-thing.js">`) so
+you can use top-level `await`. **Register command handlers first, then connect
+once:**
 
 ```javascript
-let model = null;
-
-window.addEventListener('load', async () => {
-  await SketchUpApi.connect();
-  model = await SketchUpApi.getActiveModel();
+// 1. Register handlers BEFORE connecting. Clicking a menu item or toolbar
+//    button is what creates your iframe, so that command is already in flight.
+//    SketchUp replays it only if a handler exists by the time you connect.
+SketchUpApi.ui.on('my-command', async () => {
+  /* ... */
 });
 
-window.addEventListener('beforeunload', async () => {
-  await SketchUpApi.disconnect();
-});
+// 2. Connect once, on load - not per operation.
+await SketchUpApi.connect();
+const model = await SketchUpApi.getActiveModel();
 ```
+
+`connect()` takes options, e.g. `await SketchUpApi.connect({ whenOperationInProgress: 'queue' })`
+to queue operations instead of failing when one is already open (see
+[Operation Queuing](#operation-queuing)). Handlers are not needed for a windowed
+extension that has no commands. See `../examples/hello-world/` for a complete
+page.
 
 ---
 
@@ -134,29 +142,29 @@ window.addEventListener('beforeunload', async () => {
 
 | Type                  | Description              | Key Properties                                       |
 | --------------------- | ------------------------ | ---------------------------------------------------- |
-| **Edge**              | Line segment             | `start`, `end`, `smooth`, `soft`, `hidden`           |
-| **Face**              | Surface                  | `outerLoop`, `holes`, `materialId`, `backMaterialId` |
-| **Group**             | Container with transform | `name`, `transform`, `locked`, `definitionId`        |
-| **ComponentInstance** | Instance of component    | `definitionId`, `transform`, `name`, `guid`          |
+| **Edge**              | Line segment             | `start`, `end`, `smooth`, `soft`, `hidden`, `curve`  |
+| **Face**              | Surface                  | `outerLoop`, `holes`, `normal`, `plane`, `materialRef`, `backMaterialRef` |
+| **Group**             | Container with transform | `name`, `transform`, `locked`, `entities`, `definitionId` |
+| **ComponentInstance** | Instance of component    | `definition`, `definitionId`, `transform`, `name`, `guid` |
 | **ConstructionPoint** | Reference point          | `position`                                           |
-| **ConstructionLine**  | Reference line           | `start`, `end`, `direction`                          |
+| **ConstructionLine**  | Reference line           | `start`, `end`, `direction`, `position`              |
 
 ### Other Entities
 
 | Type          | Description         | Key Properties                                 |
 | ------------- | ------------------- | ---------------------------------------------- |
-| **Component** | Reusable definition | `name`, `description`, `isLive`, `behavior`    |
-| **Material**  | Surface appearance  | `name`, `color`, `alpha`, `texture`, `exportThumbnail()` |
+| **ComponentDefinition** | Reusable definition | `name`, `description`, `isLive`, `behavior`, `entities` |
+| **Material**  | Surface appearance  | `name`, `displayName`, `color`, `alpha`, `texture`, `exportThumbnail()` |
 | **Tag**       | Visibility layer    | `name`, `visible`, `color`                     |
 | **TagFolder** | Tag organizer       | `name`, `tags`, `tagFolders`, `visible`        |
-| **Scene**     | Saved view state    | `name`, `camera`, `properties`                 |
+| **Scene**     | Saved view state    | `name`, `description`, `camera`, `properties`  |
 | **Texture**   | Image asset         | `width`, `height`, `imageWidth`, `imageHeight` |
 
 ### Common Properties (All Drawing Elements)
 
-- `id` - Entity identifier (session-specific)
-- `tagId` - Associated tag ID
-- `materialId` - Associated material ID
+- `id` - Entity identifier (session-specific); `sketchupId` is the `{ type, value }` form that lookup methods take
+- `tagRef` - Reference to the associated tag (`getTag()` fetches the `Tag`)
+- `materialRef` - Reference to the associated material (`getMaterial()` fetches the `Material`)
 - `hidden` - Visibility flag
 - `receivesShadows`, `castsShadows` - Shadow flags
 - `attributes` - Custom key-value data (an `Attributes` class instance; see [Entity Attributes](#entity-attributes) for API details)
@@ -212,6 +220,30 @@ await model.performOperation(async (op) => {
 
 The same pattern applies to all entity types (`op.entityForRef()`).
 Always resolve refs when you need the entity outside its creating operation.
+
+### Operation Queuing
+
+Only one operation can be open per model. By default, starting a second one
+while the first is open fails with an error. To wait your turn instead, pass
+`whenOperationInProgress` to `connect()` (for every operation) or to a single
+`performOperation()`:
+
+```javascript
+// Queue every operation behind any that are in progress
+await SketchUpApi.connect({ whenOperationInProgress: 'queue' });
+
+// Or just this one - and give up after 5 seconds (rejects with a TimeoutError)
+await model.performOperation(
+  async (op) => {
+    /* ... */
+  },
+  'Queued edit',
+  { whenOperationInProgress: { queueUpTo: { millis: 5000 } } }
+);
+```
+
+Values are `'error'` (the default), `'queue'` (wait indefinitely) and
+`{ queueUpTo: { millis } }`. Queued operations open in the order they were started.
 
 ---
 
@@ -325,10 +357,35 @@ await model.performOperation(async (op) => {
     [0, 100, 0],
   ]);
 
-  // Extrude face by 50 units
-  op.facePushPull(faceRef, 50, true);
+  // Extrude the face by 50 inches. Ground-plane faces point down, so a
+  // NEGATIVE distance extrudes upward. `true` is the `copy` flag, as in the
+  // repo's examples (see `../examples/hello-world/`).
+  op.facePushPull(faceRef, -50, true);
 }, 'Create box via push-pull');
 ```
+
+### Circles, Arcs and Polygons
+
+```javascript
+await model.performOperation(async (op) => {
+  const group = op.createGroup(model);
+
+  // Circle: container, center, normal, radius, [numSegments = 24]
+  const { curve, edges } = op.createCircle(group, [0, 0, 0], [0, 0, 1], 50);
+
+  // Regular polygon: same arguments, numSegments is the number of sides
+  op.createNgon(group, [200, 0, 0], [0, 0, 1], 50, 6);
+
+  // Arc: container, center, xaxis, normal, radius, startAngle, endAngle (radians)
+  op.createArc(group, [400, 0, 0], [1, 0, 0], [0, 0, 1], 50, 0, Math.PI);
+
+  // A curve through any list of points
+  op.createCurve(group, [[0, 100, 0], [50, 150, 0], [100, 100, 0]]);
+}, 'Create curves');
+```
+
+Each of these returns `{ curve, edges }` (refs). Radii accept a number of inches
+or a `Length`.
 
 ---
 
@@ -340,7 +397,7 @@ await model.performOperation(async (op) => {
 await model.performOperation(async (op) => {
   // Create material
   const materialRef = op.createMaterial('Red Material');
-  op.materialSetColor(materialRef, { red: 255, green: 0, blue: 0, alpha: 255 });
+  op.materialSetColor(materialRef, new SketchUpApi.Color(255, 0, 0)); // red, green, blue, [alpha]; each 0-255
 
   const material = await op.entityForRef(materialRef);
 
@@ -374,7 +431,7 @@ await model.performOperation(async (op) => {
   ]);
 
   const matRef = op.createMaterial('Blue Group');
-  op.materialSetColor(matRef, { red: 0, green: 0, blue: 255, alpha: 255 });
+  op.materialSetColor(matRef, new SketchUpApi.Color(0, 0, 255));
   const mat = await op.entityForRef(matRef);
 
   // Resolve the group ref to a persistent entity, then paint it.
@@ -468,11 +525,9 @@ Control how a texture maps onto a face by providing model-space to UV-space coor
 await model.performOperation(async (op) => {
   // Create a textured material
   const matRef = op.createMaterial('Positioned Texture');
-  op.materialSetColor(matRef, { red: 200, green: 200, blue: 200, alpha: 255 });
+  op.materialSetColor(matRef, new SketchUpApi.Color(200, 200, 200));
   // Assign texture from a base64-encoded image (PNG or JPEG)
-  op.materialSetTextureDataBase64(matRef, myBase64Png, {
-    width: 10, height: 10,  // Size in model units (inches)
-  });
+  op.materialSetTextureDataBase64(matRef, myBase64Png);
   const mat = await op.entityForRef(matRef);
 
   // Create a face
@@ -488,30 +543,30 @@ await model.performOperation(async (op) => {
   //   [modelPoint1, uvPoint1, modelPoint2, uvPoint2, ...]
   // UV coords: x=u (0-1 horizontal), y=v (0-1 vertical)
   op.facePositionFrontMaterial(face, mat, [
-    new Point3d(0, 0, 0),   new Point3d(0, 0, 0),    // bottom-left -> UV (0,0)
-    new Point3d(10, 0, 0),  new Point3d(1, 0, 0),    // bottom-right -> UV (1,0)
-    new Point3d(10, 10, 0), new Point3d(1, 1, 0),    // top-right -> UV (1,1)
-    new Point3d(0, 10, 0),  new Point3d(0, 1, 0),    // top-left -> UV (0,1)
-  ], undefined);  // no projection vector
+    [0, 0, 0],   [0, 0],    // bottom-left -> UV (0,0)
+    [10, 0, 0],  [1, 0],    // bottom-right -> UV (1,0)
+    [10, 10, 0], [1, 1],    // top-right -> UV (1,1)
+    [0, 10, 0],  [0, 1],    // top-left -> UV (0,1)
+  ]);  // optional 4th argument: a projection vector
 
   // Back material works the same way:
   // op.facePositionBackMaterial(face, mat, positions, projection);
 }, 'Position texture on face');
 ```
 
-**SketchupTexturePositioning** accepts 1–4 model/UV point pairs:
+**`TexturePositioning`** accepts 1–4 model/UV point pairs (points are `Point3Like`, so plain arrays work):
 - **1 pair** `[model, uv]` — anchor point, texture uses default orientation
 - **2 pairs** — defines position + scale/rotation
 - **3 pairs** — defines position + skew
 - **4 pairs** — full quad mapping (most control)
 
-Optional `projection` parameter (`Vector3d`) sets the projection direction for projecting textures onto non-planar surfaces.
+Optional `projection` parameter (a `Vector3Like`) sets the projection direction for projecting textures onto non-planar surfaces.
 
 **EntitiesBuilder equivalent** (for bulk operations):
 ```javascript
 const positioning = builder.createTexturePositioning(mat, [
-  new Point3d(0, 0, 0), new Point3d(0, 0, 0),
-  new Point3d(10, 0, 0), new Point3d(1, 0, 0),
+  [0, 0, 0], [0, 0],
+  [10, 0, 0], [1, 0],
 ], undefined);
 builder.positionFaceFrontMaterial(faceRef, positioning);
 ```
@@ -537,15 +592,19 @@ await model.performOperation(async (op) => {
   ]);
 
   // Assign tag
-  op.drawingElementAssignTag(group, tag);
+  op.drawingElementSetTag(group, tag);
 }, 'Create tagged geometry');
 ```
 
-### Tag Visibility
+### Find a Tag and Change Its Visibility
 
 ```javascript
+// Look tags up by name with the TagManager - no need to keep refs around.
+const tagManager = await model.getTagManager();
+const tag = tagManager.findTag('My Layer'); // undefined if there is no such tag
+
 await model.performOperation(async (op) => {
-  op.tagSetVisible(tagRef, false); // Hide tag
+  op.tagSetVisible(tag, false); // Hide tag
 }, 'Hide tag');
 ```
 
@@ -558,6 +617,8 @@ await model.performOperation(async (op) => {
 }, 'Create tag in folder');
 ```
 
+`tagManager.findTagFolder(name)` finds a folder by name, like `findTag`.
+
 ---
 
 ## Selection
@@ -567,7 +628,7 @@ await model.performOperation(async (op) => {
 ```javascript
 // Get entities first
 const entities = await model.entities.get();
-const face = entities.find((e) => e.type === 2); // Face type = 2
+const face = entities.find((e) => e.type === SketchUpApi.EntityType.Face);
 
 // Add to selection
 await model.updateSelection(face, 'add');
@@ -591,8 +652,7 @@ await model.updateSelection([], 'replace');
 const selection = await model.getSelection();
 console.log('Selected count:', selection.totalNumberOfElements);
 
-const selected = await selection.getSelection();
-selected.drawingElements.forEach((entity) => {
+selection.drawingElements.forEach((entity) => {
   console.log('Entity ID:', entity.id, 'Type:', entity.type);
 });
 ```
@@ -602,8 +662,7 @@ selected.drawingElements.forEach((entity) => {
 ```javascript
 // Get only faces from the current selection
 const selection = await model.getSelection({
-  filter: 'typeIn',
-  values: [SketchUpApi.EntityType.Face]
+  filterBy: { types: ['Face'] }
 });
 
 // totalNumberOfElements is the FULL selection count (ignoring filter)
@@ -629,8 +688,7 @@ console.log('Matching elements:', metadata.matchingDrawingElements);
 ```javascript
 // Get metadata for only specific entity types
 const metadata = await model.getSelectionMetadata({
-  filter: 'typeIn',
-  values: [SketchUpApi.EntityType.Face, SketchUpApi.EntityType.Edge]
+  filterBy: { types: ['Face', 'Edge'] }
 });
 
 // totalNumberOfElements is still the FULL selection count
@@ -658,7 +716,7 @@ handle.stop();
 // Observe only metadata about specific entity types
 const handle = model.observeSelectionMetadata((metadata) => {
   console.log(`${metadata.matchingDrawingElements} faces selected`);
-}, { filter: 'typeIn', values: [SketchUpApi.EntityType.Face] });
+}, { filterBy: { types: ['Face'] } });
 
 // Close when done
 handle.stop();
@@ -671,7 +729,7 @@ A common pattern is to observe selection changes and fetch entity data when some
 ```javascript
 const model = await SketchUpApi.getActiveModel();
 
-// Start observing — filtered to groups (3) and component instances (4)
+// Start observing — filtered to groups and component instances
 const handle = model.observeSelectionMetadata(async (metadata) => {
   if (metadata.matchingDrawingElements === 0) {
     console.log('Selection cleared');
@@ -680,8 +738,7 @@ const handle = model.observeSelectionMetadata(async (metadata) => {
 
   // Fetch the actual selected entities
   const selection = await model.getSelection({
-    filter: 'typeIn',
-    values: [3, 4]
+    filterBy: { types: ['Group', 'ComponentInstance'] }
   });
 
   for (const entity of selection.drawingElements) {
@@ -691,7 +748,7 @@ const handle = model.observeSelectionMetadata(async (metadata) => {
 
   // Optional: clear selection so re-clicking the same object fires again
   await model.updateSelection([], 'replace');
-}, { filter: 'typeIn', values: [3, 4] });
+}, { filterBy: { types: ['Group', 'ComponentInstance'] } });
 
 // Later, when your extension unloads:
 handle.stop();
@@ -764,7 +821,7 @@ await model.performOperation(async (op) => {
   const sceneRef2 = op.createScene('Camera Only', {
     use_camera: true,
     use_hidden_geometry: false,
-    use_hidden_layers: false,
+    use_hidden_tags: false,
     use_shadow_info: false,
     use_axes: false,
   });
@@ -828,9 +885,11 @@ await model.performOperation(async (op) => {
   op.sceneSetProperties(scene, {
     use_camera: true, // Save/restore camera position
     use_hidden_geometry: true, // Save/restore hidden geometry state
-    use_hidden_layers: true, // Save/restore tag visibility
+    use_hidden_tags: true, // Save/restore tag visibility
     use_shadow_info: true, // Save/restore shadow settings
     use_axes: true, // Save/restore axes position
+    // Others: use_hidden_objects, use_environment, use_rendering_options,
+    // use_section_planes
   });
 
   // Recapture scene from current model state
@@ -844,31 +903,29 @@ await model.performOperation(async (op) => {
 ### Scene Camera
 
 ```javascript
-// Get camera from scene
-const camera = scene.getCamera();
+// Read the camera from a scene. `scene.camera` is available directly;
+// `await scene.getCamera()` fetches a fresh copy.
+const camera = scene.camera;
 console.log('Eye position:', camera.eye); // Where camera is located
 console.log('Target:', camera.target); // What camera looks at
 console.log('Up vector:', camera.up); // Camera orientation
-console.log('Field of view:', camera.fov); // Perspective angle
-console.log('Is perspective:', camera.isPerspective);
+console.log('Field of view (degrees):', camera.fieldOfView);
+console.log('Is perspective:', camera.type === SketchUpApi.CameraType.perspective);
 
-// Set camera for scene
+// Set camera for scene. Cameras are immutable: each with*() returns a new one.
 await model.performOperation(async (op) => {
-  op.sceneSetCamera(scene, {
-    eye: [100, 100, 50], // Camera position
-    target: [0, 0, 0], // Look at origin
-    up: [0, 0, 1], // Z is up
-    fov: 35, // 35 degree field of view
-    isPerspective: true,
-  });
+  const sceneCamera = SketchUpApi.Camera.default()
+    .withOrientation([100, 100, 50], [0, 0, 0], [0, 0, 1]) // eye, target, up
+    .withFieldOfView(35); // degrees
+  op.sceneSetCamera(scene, sceneCamera);
 }, 'Set scene camera');
 ```
 
 ### Scene Axes
 
 ```javascript
-// Get axes from scene
-const axes = scene.getAxes();
+// Get axes from scene (undefined if the scene has none)
+const axes = await scene.getAxes();
 console.log('Origin:', axes.origin);
 console.log('X axis:', axes.xaxis);
 console.log('Y axis:', axes.yaxis);
@@ -889,8 +946,8 @@ await model.performOperation(async (op) => {
 ### Scene Shadow Info
 
 ```javascript
-// Get shadow info from scene
-const shadowInfo = scene.getShadowInfo();
+// Get shadow info from scene (undefined if the scene has none)
+const shadowInfo = await scene.getShadowInfo();
 console.log('Display shadows:', shadowInfo.displayShadows);
 console.log('Dark value:', shadowInfo.dark);
 console.log('Light value:', shadowInfo.light);
@@ -937,22 +994,6 @@ await model.performOperation(async (op) => {
 ### Scene Visibility (Per-Scene Hidden State)
 
 ```javascript
-// Get hidden items in scene
-const hiddenTags = scene.getHiddenTags();
-const hiddenFolders = scene.getHiddenTagFolders();
-const hiddenElements = scene.getHiddenElements();
-
-console.log(
-  'Hidden tags:',
-  hiddenTags.map((t) => t.name)
-);
-console.log(
-  'Hidden folders:',
-  hiddenFolders.map((f) => f.name)
-);
-console.log('Hidden elements:', hiddenElements.length);
-
-// Set visibility for specific scene
 await model.performOperation(async (op) => {
   // Hide/show tag in this scene only
   op.sceneSetTagVisibility(scene, tag, false);
@@ -1008,18 +1049,20 @@ provides human-readable examples for common operations.
 ### SET vs APPLY Transformations
 
 ```javascript
-// SET - Replace entire transformation (absolute positioning)
-// Use when you want to move something to a specific location
-op.groupSetTransformation(group, [100, 50, 0]);
+await model.performOperation(async (op) => {
+  // SET - Replace entire transformation (absolute positioning)
+  // Use when you want to move something to a specific location
+  op.groupSetTransformation(group, [100, 50, 0]);
 
-// APPLY - Compound with existing transformation (relative movement)
-// Use when you want to move something from its current position
-op.groupApplyTransformation(group, [10, 0, 0]);
+  // APPLY - Compound with existing transformation (relative movement)
+  // Use when you want to move something from its current position
+  op.groupApplyTransformation(group, [10, 0, 0]);
+}, 'Move group');
 ```
 
 ### Move (Translation)
 
-**Note:** The `[x, y, z]` shorthand for translations works reliably with refs created in the same operation (e.g., from `op.createGroup()`). When working with entities fetched from `model.entities.get()`, use `Transformation.translation()` explicitly to avoid errors.
+**Note:** Anywhere a transformation is expected you can pass a plain `[x, y, z]` as shorthand for a translation. `SketchUpApi.Transformation.translation(...)` says the same thing explicitly, and is clearer when you combine transformations.
 
 ```javascript
 await model.performOperation(async (op) => {
@@ -1029,9 +1072,8 @@ await model.performOperation(async (op) => {
   // Move a component instance 5 feet to the right (60 inches)
   op.instanceApplyTransformation(instance, [60, 0, 0]);
 
-  // RECOMMENDED: Use Transformation.translation() when working with
-  // entities fetched from model.entities.get() - more reliable
-  const move = Sketchup.Transformation.translation([10, 20, 0]);
+  // The explicit form: Transformation.translation()
+  const move = SketchUpApi.Transformation.translation([10, 20, 0]);
   op.groupApplyTransformation(existingGroup, move);
 
   // Move a group diagonally: 10 right, 20 forward, 5 up
@@ -1070,8 +1112,9 @@ await model.performOperation(async (op) => {
   );
 
   // Scale from a specific center point (not the origin)
-  // Scale 2x around point [50, 50, 0]
-  const scaleFromCenter = Transformation.scaling([50, 50, 0], 2);
+  // Scale 2x around point (50, 50, 0). This overload needs a Point3d instance,
+  // not a plain array.
+  const scaleFromCenter = Transformation.scaling(new SketchUpApi.Point3d(50, 50, 0), 2);
   op.groupApplyTransformation(group, scaleFromCenter);
 
   // Scale only in X direction (stretch horizontally)
@@ -1194,7 +1237,7 @@ const t1 = Transformation.translation([10, 20, 30]);
 // Scaling - uniform or per-axis
 const t2 = Transformation.scaling(2); // 2x all directions
 const t3 = Transformation.scaling(2, 3, 1); // 2x X, 3x Y, 1x Z
-const t4 = Transformation.scaling([50, 50, 0], 2); // 2x from point
+const t4 = Transformation.scaling(new SketchUpApi.Point3d(50, 50, 0), 2); // 2x from point (needs a Point3d)
 
 // Rotation - around axis through point
 const t5 = Transformation.rotation(
@@ -1293,29 +1336,12 @@ if (Math.abs(r20) < 0.99999) {
 }
 console.log(`Rotation: X=${rx * toDeg}, Y=${ry * toDeg}, Z=${rz * toDeg}`); // degrees
 
-// --- Surface area (Newell method) ---
-// Compute area of a face from its vertex loops. The first loop is the
-// outer boundary; subsequent loops are holes (subtracted).
-const faces = await container.faces(); // container = group or definition
-let totalArea = 0;
-for (const face of faces) {
-  const loops = face.closedVertexLoops;
-  if (!loops || loops.length === 0) continue;
-
-  for (let i = 0; i < loops.length; i++) {
-    const verts = loops[i];
-    // Newell method: cross-product sum over the polygon edges
-    let nx = 0, ny = 0, nz = 0;
-    for (let j = 0; j < verts.length; j++) {
-      const a = verts[j], b = verts[(j + 1) % verts.length];
-      nx += a.y * b.z - a.z * b.y;
-      ny += a.z * b.x - a.x * b.z;
-      nz += a.x * b.y - a.y * b.x;
-    }
-    const loopArea = Math.sqrt(nx * nx + ny * ny + nz * nz) / 2;
-    totalArea += i === 0 ? loopArea : -loopArea; // subtract holes
-  }
-}
+// --- Surface area ---
+// Face.area() returns square inches from the face's own geometry. Use
+// `await face.getArea()` instead when glued instances (windows, doors) cut
+// openings in the face.
+const faces = await container.entities.get({ filterBy: { types: ['Face'] } }); // container = group, definition or model
+const totalArea = faces.reduce((sum, face) => sum + face.area(), 0);
 console.log(`Total area: ${totalArea} sq inches`);
 ```
 
@@ -1331,8 +1357,7 @@ await model.performOperation(async (op) => {
 
   // Transform filtered entities (e.g., only faces)
   op.entitiesApplyTransformation(group, moveAll, {
-    filter: 'typeIn',
-    values: [2], // Face type = 2
+    filterBy: { types: ['Face'] },
   });
 
   // Transform specific drawing elements
@@ -1354,21 +1379,26 @@ const entities = await model.entities.get();
 entities.forEach((e) => console.log(e.type, e.id, e.sketchupId));
 ```
 
-### Filter by Type
+### Filter Entities
+
+Pass `filterBy` to `get()`. A filter is one of `{ types }`, `{ tags }`,
+`{ visible }`, `{ attribute }`, or an `{ and }`, `{ or }`, `{ not }` combination.
+Types can be names (`'Face'`) or `SketchUpApi.EntityType` values.
 
 ```javascript
-// Entity type enum values
-// Vertex=0, Edge=1, Face=2, Group=3, ComponentInstance=4, Component=5
-// Material=6, Tag=7, ConstructionPoint=10, ConstructionLine=11, Scene=12
+const faces = await group.entities.get({ filterBy: { types: ['Face'] } });
 
-const faces = await group.entities({
-  filter: 'typeIn',
-  values: [2], // Face
-});
+const groups = await model.entities.get({ filterBy: { types: ['Group'] } });
 
-const groups = await model.entities({
-  filter: 'typeIn',
-  values: [3], // Group
+// Combine filters: visible groups that have a price attribute
+const priced = await model.entities.get({
+  filterBy: {
+    and: [
+      { types: ['Group'] },
+      { visible: true },
+      { attribute: { path: ['MyPricingExtension'], key: 'price', value: 299 } },
+    ],
+  },
 });
 ```
 
@@ -1399,10 +1429,14 @@ console.log('Min:', bounds.min, 'Max:', bounds.max);
 ### Load Component from URL
 
 ```javascript
+let definition; // persists across operations
+
 await model.performOperation(async (op) => {
-  const componentRef = await op.loadDefinition('/path/to/model.skp');
-  const component = await op.entityForRef(componentRef);
-  console.log('Loaded:', component.name);
+  const definitionRef = await op.loadDefinition({
+    resource: { request: '/path/to/model.skp' }, // also { dataUrl } or { blob }
+  });
+  definition = await op.entityForRef(definitionRef); // resolve before the operation ends
+  console.log('Loaded:', definition.name);
 }, 'Load component');
 ```
 
@@ -1410,12 +1444,11 @@ await model.performOperation(async (op) => {
 
 ```javascript
 await model.performOperation(async (op) => {
-  const component = await op.entityForRef(componentRef);
   const group = op.createGroup(model);
 
   const instanceRef = op.createInstance(
     group,
-    component,
+    definition, // the persistent entity from above
     SketchUpApi.Transformation.translation([100, 100, 0])
   );
 }, 'Create instance');
@@ -1430,16 +1463,15 @@ components.forEach((c) => console.log(c.name, c.isLive));
 
 ### Get Entities Inside a Component Definition
 
-Component **definitions** (not instances) support `.entities()` to access their children:
+Component **definitions** (not instances) have `.entities` to access their children:
 
 ```javascript
 const components = await model.getDefinitions();
 const myComponent = components.find((c) => c.name === 'Chair');
 
 // Get all child component instances within this definition
-const subInstances = await myComponent.entities({
-  filter: 'typeIn',
-  values: [4], // ComponentInstance
+const subInstances = await myComponent.entities.get({
+  filterBy: { types: ['ComponentInstance'] },
 });
 
 // Map each instance back to its definition name
@@ -1454,7 +1486,7 @@ for (const inst of subInstances) {
 ## Entity Attributes
 
 Attributes are custom key-value data stored in named dictionaries on entities.
-They are available on most entity types: Component, ComponentInstance, Group,
+They are available on most entity types: ComponentDefinition, ComponentInstance, Group,
 Face, Edge, Material, Tag, TagFolder, and Scene.
 
 **Important**: Attributes are always included automatically when you query
@@ -1560,7 +1592,7 @@ for (const comp of components) {
 }
 
 // Component instances
-const instances = await model.entities({ filter: 'typeIn', values: [4] });
+const instances = await model.entities.get({ filterBy: { types: ['ComponentInstance'] } });
 for (const inst of instances) {
   // inst.attributes is also an Attributes instance
   const dicts = inst.attributes.dictionaries;
@@ -1579,10 +1611,13 @@ await model.performOperation(async (op) => {
 
 ### Erase Drawing Elements
 
+Methods that take a ref also take the entity itself, so you can pass entities
+fetched with `model.entities.get()` (or refs created in the same operation).
+
 ```javascript
 await model.performOperation(async (op) => {
   // Erase a single drawing element (edge, face, group, etc.)
-  op.drawingElementErase(entityRef);
+  op.drawingElementErase(entity);
 }, 'Erase entity');
 ```
 
@@ -1590,7 +1625,7 @@ To erase locked groups or component instances, use the force variant which unloc
 
 ```javascript
 await model.performOperation(async (op) => {
-  op.drawingElementEraseWithForce(lockedGroupRef);
+  op.drawingElementEraseWithForce(lockedGroup);
 }, 'Force erase locked group');
 ```
 
@@ -1615,7 +1650,7 @@ if (selection.drawingElements.length > 0) {
 
 ```javascript
 await model.performOperation(async (op) => {
-  op.drawingElementSetProperties(entityRef, {
+  op.drawingElementSetProperties(entity, {
     hidden: true,
     receivesShadows: false,
     castsShadows: false,
@@ -1627,7 +1662,7 @@ await model.performOperation(async (op) => {
 
 ```javascript
 await model.performOperation(async (op) => {
-  op.edgeSetProperties(edgeRef, {
+  op.edgeSetProperties(edge, {
     hidden: false,
     smooth: true,
     soft: true,
@@ -1639,8 +1674,8 @@ await model.performOperation(async (op) => {
 
 ```javascript
 await model.performOperation(async (op) => {
-  // EdgeUsageType: Any=0, Shared=1, UniqueToFace=2, UniqueOrUnboundToFace=3, UnboundToFace=4
-  op.faceSetEdgeProperties(faceRef, 0, {
+  // SketchUpApi.EdgeUsageType: Any, Shared, UniqueToFace, UniqueOrUnboundToFace, UnboundToFace
+  op.faceSetEdgeProperties(face, SketchUpApi.EdgeUsageType.Any, {
     // Any edge
     hidden: true,
     smooth: true,
@@ -1655,7 +1690,7 @@ await model.performOperation(async (op) => {
 
 ```javascript
 console.log('Model ID:', model.id);
-console.log('Model name:', model.name);
+console.log('Model title:', model.title); // display name; empty until the model is saved
 console.log('Model GUID:', model.guid);
 console.log('Revision:', model.revision);
 
@@ -1671,32 +1706,105 @@ const axes = await model.getAxes();
 console.log('Origin:', axes.origin);
 ```
 
-### Model Units
+### Model Attributes
 
-Access the model's unit settings via `model.options.unitOptions`:
+```javascript
+await model.performOperation(async (op) => {
+  op.modelSetAttribute(['MyExtension'], 'version', '1.0');
+}, 'Set model attribute');
+
+// `model` is a snapshot, so refresh it to see the change
+const updated = await model.refresh();
+const version = updated.attributes.findValue('MyExtension', 'version', { default: 'unknown' });
+```
+
+### Working with Units and Length
+
+SketchUp stores everything in **inches** (areas in square inches), and a bare
+number passed to the API is always inches. `SketchUpApi.Length` is how you say
+"2.5 meters" or "3 feet" without converting by hand. A `Length` is accepted
+anywhere the API takes a distance: point coordinates, `facePushPull`, circle/arc
+radii, image sizes and more (the "Lengths" section of `JSA_API_COMPLETE.md` lists
+them).
+
+```javascript
+const L = SketchUpApi.Length;
+
+// Build a length in any unit (stored as inches)
+const width = L.meters(2.5); // also inches(), feet(), yards(), miles(), millimeters(), centimeters(), kilometers()
+console.log(width.feet, width.inches); // read it back in any unit
+
+// Lengths and plain numbers mix freely
+await model.performOperation(async (op) => {
+  const group = op.createGroup(model);
+  const face = op.createFace(group, [
+    [0, 0, 0],
+    [width, 0, 0],
+    [width, L.meters(1), 0],
+    [0, L.meters(1), 0],
+  ]);
+  op.facePushPull(face, L.feet(-3), true); // negative = up from a ground-plane face
+  op.createCircle(group, [0, 0, 0], [0, 0, 1], L.millimeters(300)); // radius
+}, 'Draw with lengths');
+
+// Arithmetic returns new Lengths. valueOf() gives inches, so operators work too
+L.feet(1).scale(2).inches; // 24
+L.feet(1).add(6).inches; // 18  (add takes inches or another Length)
+L.feet(1) + 3; // 15, a plain number of inches
+```
+
+#### Parsing what the user typed
+
+`Length.parse()` understands the formats SketchUp's own measurement box does and
+returns `undefined` when the text isn't a length, so always check:
+
+```javascript
+const typed = L.parse(`5' 3 1/2"`, model); // 63.5 inches
+if (!typed) {
+  // not a length: ask again
+}
+L.parse('2m', model); // 78.74 inches
+```
+
+Pass the **model** and unit-less input uses the model's own units; leave it out
+and a bare number is inches:
+
+```javascript
+// in a model whose length unit is meters:
+L.parse('5', model); // 196.85 inches (5 m)
+L.parse('5'); // 5 inches
+```
+
+Instead of a model you can pass `{ lengthUnit, lengthFormat }` (the
+`SketchUpApi.LengthUnit` / `LengthFormat` enums).
+
+#### Showing a length the way the model does
+
+```javascript
+L.meters(1).format(model); // "1.00 m" in a meters model, 39.37" in an inches model
+L.feet(0.5).format(model); // "~ 0.15 m": a leading "~" means the text is rounded
+```
+
+#### Reading and changing the model's unit settings
 
 ```javascript
 const unitOptions = model.options.unitOptions;
 
-// Length units
-console.log(unitOptions.lengthUnit);      // 0=Inches, 1=Feet, 2=mm, 3=cm, 4=m, 5=yd
-console.log(unitOptions.lengthFormat);    // 0=Decimal, 1=Architectural, 2=Engineering, 3=Fractional
-console.log(unitOptions.lengthPrecision); // number of decimal places
+console.log(unitOptions.lengthUnit); // SketchUpApi.LengthUnit: Inches=0, Feet=1, Millimeter=2, Centimeter=3, Meter=4, Yard=5
+console.log(unitOptions.lengthFormat); // SketchUpApi.LengthFormat: Decimal=0, Architectural=1, Engineering=2, Fractional=3
+console.log(unitOptions.lengthPrecision); // decimal places (or the fraction denominator)
+console.log(unitOptions.areaUnit); // SketchUpApi.AreaUnit: SquareInches=0, SquareFeet=1, SquareMillimeter=2, SquareCentimeter=3, SquareMeter=4, SquareYard=5
 
-// Area units
-console.log(unitOptions.areaUnit);        // 0=sq in, 1=sq ft, 2=sq mm, 3=sq cm, 4=sq m, 5=sq yd
-console.log(unitOptions.areaPrecision);   // number of decimal places
+// update() keys are PascalCase, unlike the camelCase getters above. It resolves to
+// the array of rejected keys, so [] means everything was accepted.
+const rejected = await unitOptions.update({ LengthUnit: SketchUpApi.LengthUnit.Meter });
 ```
 
-All SketchUp internal values (vertex positions, edge lengths, face areas) are stored
-in **inches** (and **square inches** for area). Convert to display units using the
-factors above.
-
-**Important:** The model object returned by `getActiveModel()` caches its option values
-as a snapshot. If the user changes units (or other model options) while your extension
-is running, you must call `getActiveModel()` again to get a fresh model with updated
-options. Simply re-reading `model.options.unitOptions` from the same model object will
-return stale values.
+**The `model` you hold is a snapshot.** After the user (or your own `update()`)
+changes units, the snapshot you already have still reports the old values. Get a
+fresh one with `await model.refresh()` or `await SketchUpApi.getActiveModel()`, or
+watch for changes with `model.observeOptionsChanges((options) => { ... })`
+(remember to `stop()` the handle).
 
 ---
 
@@ -1736,7 +1844,7 @@ await model.performOperation(async (op) => {
 
 Use `observeActiveModel` to get notified whenever the model changes (transaction
 commit, undo, redo) or a different model is loaded. Returns an `ObserverHandle`
-with an `end()` method to cancel.
+with a `stop()` method to cancel.
 
 ```javascript
 let lastModelInfo = undefined;
@@ -1755,7 +1863,7 @@ const handle = SketchUpApi.observeActiveModel((modelInfo) => {
 handle.stop();
 ```
 
-The callback receives a `SketchupObservedModel` with:
+The callback receives a `ModelRevision` with:
 - `id` — model id
 - `revision` — revision number (increments on commit, undo, redo)
 - `isDifferentModel(prev)` — true if a different model was loaded
@@ -1774,13 +1882,15 @@ To achieve real-time animation with visible intermediate frames, use these optio
 2. **`op.synchronize()`** - Waits for SketchUp to process the instruction
 
 ```javascript
+const [myGroup] = await model.entities.get({ filterBy: { types: ['Group'] } });
+
 await model.performOperation(async (op) => {
   const steps = 72;
   const stepAngle = -5 * Math.PI / 180; // 5 degrees per step
   const center = [6, 6, 0];
 
   for (let i = 0; i < steps; i++) {
-    const rotate = Sketchup.Transformation.rotation(center, [0, 0, 1], stepAngle);
+    const rotate = SketchUpApi.Transformation.rotation(center, [0, 0, 1], stepAngle);
     op.groupApplyTransformation(myGroup, rotate);
     await op.synchronize(); // Force flush - triggers render
   }
@@ -1796,14 +1906,15 @@ await model.performOperation(async (op) => {
 
 ## View Camera
 
-You can read and set the active camera to control the user's viewport.
+You can read and set the active camera to control the user's viewport. A
+`Camera` is **immutable**: every `with*()` method returns a new camera.
 
 ### Reading the Camera
 
 ```javascript
 const cam = await model.view.getCamera();
 // cam has: eye (Point3d), target (Point3d), up (Vector3d),
-//          type, fieldOfView, aspectRatio, imageWidth
+//          type (SketchUpApi.CameraType), fieldOfView (degrees), aspectRatio
 console.log('Eye:', cam.eye.x, cam.eye.y, cam.eye.z);
 console.log('Target:', cam.target.x, cam.target.y, cam.target.z);
 ```
@@ -1811,27 +1922,37 @@ console.log('Target:', cam.target.x, cam.target.y, cam.target.z);
 ### Setting the Camera
 
 ```javascript
-await model.view.setCamera({
-  eye: new SketchUpApi.Point3d(100, -500, 300),
-  target: new SketchUpApi.Point3d(0, 0, 30),
-  up: cam.up,           // preserve the original up vector
-  type: cam.type,       // preserve perspective/ortho type
-  fieldOfView: cam.fieldOfView,
-  aspectRatio: cam.aspectRatio,
-  imageWidth: cam.imageWidth,
-});
+const cam = await model.view.getCamera();
+
+// eye, target, up each accept a Point3Like / Vector3Like (arrays are fine)
+const newCam = cam.withOrientation([100, -500, 300], [0, 0, 30], cam.up);
+
+await model.view.setCamera(newCam); // jump there
+await model.view.setCamera(newCam, 1.5); // or animate over 1.5 seconds
 ```
 
-**Important:** `eye`, `target`, and `up` must be proper `Point3d`/`Vector3d` instances (not plain objects or arrays) because the serializer calls `.toArray()` on them.
+Other builders: `withFieldOfView(degrees)`, `withPerspective(boolean)`,
+`withOrbit(radians)`, `withVerticalOrbit(radians)`, `withHeight(inches)` (for
+parallel cameras), `withTransform(transformation)`, and `Camera.default()` to
+start from scratch.
 
 ### Smooth Camera Follow (Game Pattern)
 
 ```javascript
-// Lerp the camera toward a desired position each frame
+// Ease the camera toward a desired position each frame
 const SMOOTHING = 0.1; // 0–1, lower = smoother/laggier
-camera.eye.x += (desiredEye.x - camera.eye.x) * SMOOTHING;
-camera.eye.y += (desiredEye.y - camera.eye.y) * SMOOTHING;
-camera.eye.z += (desiredEye.z - camera.eye.z) * SMOOTHING;
+let camera = await model.view.getCamera();
+
+function step(desiredEye) {
+  const eye = camera.eye;
+  const newEye = eye.add([
+    (desiredEye.x - eye.x) * SMOOTHING,
+    (desiredEye.y - eye.y) * SMOOTHING,
+    (desiredEye.z - eye.z) * SMOOTHING,
+  ]);
+  camera = camera.withOrientation(newEye, camera.target, camera.up);
+  return model.view.setCamera(camera);
+}
 ```
 
 ---
@@ -1839,11 +1960,18 @@ camera.eye.z += (desiredEye.z - camera.eye.z) * SMOOTHING;
 ## Geometry Primitives
 
 ```javascript
-// Point3d - coordinates (also accept arrays [x,y,z])
+// Point3d / Vector3d - the constructors take three separate values
 const point = new SketchUpApi.Point3d(100, 50, 0);
-
-// Vector3d - direction
 const vector = new SketchUpApi.Vector3d(1, 0, 0);
+
+// create() takes anything shaped like a point/vector: [x, y, z], [x, y]
+// (z defaults to 0) or { x, y, z }
+const p = SketchUpApi.Point3d.create([100, 50, 0]);
+const v = SketchUpApi.Vector3d.create({ x: 0, y: 0, z: 1 });
+
+// Points are immutable - these return new points
+const moved = p.add([10, 0, 0]);
+const raised = p.with({ z: 20 });
 
 // BoundingBox
 const bbox = new SketchUpApi.BoundingBox(
@@ -1852,6 +1980,13 @@ const bbox = new SketchUpApi.BoundingBox(
 );
 console.log('Width:', bbox.width, 'Height:', bbox.height, 'Depth:', bbox.depth);
 ```
+
+Anywhere a method parameter is typed `Point3Like` or `Vector3Like` (for example
+`op.createFace`, `op.createCircle`, `Transformation.translation`) you can pass
+a `Point3d`/`Vector3d`, an `[x, y, z]` / `[x, y]` array, or an `{ x, y, z }`
+object. `Ray3d`, `Plane.create()` and `Transformation.create()` exist too, see
+the [API Reference](https://developer.trimble.com/docs/sketchup/jsa/api/overview/);
+`Ray3d` is not on the `SketchUpApi` global.
 
 ---
 
@@ -1984,32 +2119,25 @@ around this call.
 2. **Connect on page load** - Don't connect per-operation
 3. **Use `performOperation()`** - All modifications must be wrapped
 4. **Entity IDs are session-specific** - Don't persist them
-5. **Arrays work for coordinates** - `[x,y,z]` instead of `new Point3d(x,y,z)`
+5. **Arrays work where a `Point3Like` / `Vector3Like` is expected** - e.g. `op.createFace(group, [[0,0,0], ...])`. The `new Point3d(x, y, z)` constructor itself takes three separate values
 6. **Operations are atomic** - Errors roll back entire operation
 7. **Use entity builder** - For batch geometry creation
-8. **Check integration tests** - `/integration/src/` has comprehensive examples
+8. **More examples** - the official docs' [Examples section](https://developer.trimble.com/docs/sketchup/jsa/examples/selection/) has a focused page of snippets per topic
 
 ---
 
 ## Entity Type Enum Values
 
-For use with type filters:
+Don't copy numeric values around. Use the named enum on the global, or the type
+name as a string:
 
 ```javascript
-const EntityType = {
-  Vertex: 0,
-  Edge: 1,
-  Face: 2,
-  Group: 3,
-  ComponentInstance: 4,
-  Component: 5,
-  Material: 6,
-  Tag: 7,
-  TagFolder: 8,
-  TagManager: 9,
-  ConstructionPoint: 10,
-  ConstructionLine: 11,
-  Scene: 12,
-  Texture: 13,
-};
+SketchUpApi.EntityType.Face; // enum value
+await model.entities.get({ filterBy: { types: ['Face', 'Edge'] } }); // names work too
 ```
+
+Names include `Vertex`, `Edge`, `Face`, `Group`, `ComponentInstance`,
+`ComponentDefinition`, `Material`, `Tag`, `TagFolder`, `TagManager`,
+`ConstructionPoint`, `ConstructionLine`, `Scene`, `Texture`, `SectionPlane`,
+`Snap`, `Image`, `Text`, `Curve`, `ArcCurve`, `DimensionLinear`,
+`DimensionRadial` and `Style`.

@@ -52,7 +52,7 @@ For a color the variables don't cover, use `light-dark()`:
 `light-dark()` only takes colors, so anything else, such as lightening navy
 `<img>` icons, needs a rule that applies under the same conditions as the
 stylesheet's dark mode. `css-demo.html` shows how, and
-[Dark mode](https://docs.sketchup.com/sketchup/jsa/latest/jsa/welcome/extension/#dark-mode)
+[Dark mode](https://developer.trimble.com/docs/sketchup/jsa/welcome/extension/#dark-mode)
 in the JSA docs covers the JavaScript equivalent and pages that don't use this
 stylesheet.
 

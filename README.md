@@ -33,7 +33,7 @@ closest example, and produce a working extension you can install in SketchUp.
 [Build with Claude Code](https://developer.trimble.com/docs/sketchup/jsa/tutorials/claude-code/) tutorial.
 
 Prefer to read rather than generate? Start with
-[`examples/hello-world/`](./examples/hello-world/) — it's about 130 lines of
+[`examples/hello-world/`](./examples/hello-world/) — it's about 150 lines of
 commented JavaScript that covers both reading from and writing to the model.
 The docs walk through the same ground step by step, in
 [plain JS/HTML](https://developer.trimble.com/docs/sketchup/jsa/tutorials/hand-coded/)
@@ -49,8 +49,8 @@ every example follows, and the JSA rules that are easiest to get wrong.
 
 Structured reference docs optimized for AI coding agents:
 
-- [`JSA_API_COMPLETE.md`](./agent/JSA_API_COMPLETE.md) — Full API surface reference
-- [`JSA_RECIPES.md`](./agent/JSA_RECIPES.md) — Common patterns and usage examples
+- [`JSA_API_COMPLETE.md`](./agent/JSA_API_COMPLETE.md) — Common API reference: names, parameters, return types
+- [`JSA_RECIPES.md`](./agent/JSA_RECIPES.md) — Common patterns and usage examples, including units and `Length`
 - [`JSA_MANIFEST.md`](./agent/JSA_MANIFEST.md) — Manifest format documentation
 - [`JSA_NEW_EXTENSION_WIZARD.md`](./agent/JSA_NEW_EXTENSION_WIZARD.md) — Scaffolding guide
 - [`README.md`](./agent/README.md) — Priority guide for which docs to read first

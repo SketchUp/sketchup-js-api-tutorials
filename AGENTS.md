@@ -18,7 +18,7 @@ which is a small and fast-moving API you likely know poorly.
 | File                                                                       | When                                            |
 | -------------------------------------------------------------------------- | ----------------------------------------------- |
 | [`agent/JSA_NEW_EXTENSION_WIZARD.md`](./agent/JSA_NEW_EXTENSION_WIZARD.md) | Always, when scaffolding something new          |
-| [`agent/JSA_API_COMPLETE.md`](./agent/JSA_API_COMPLETE.md)                 | Always — the full API surface, densely listed   |
+| [`agent/JSA_API_COMPLETE.md`](./agent/JSA_API_COMPLETE.md)                 | Always — the common API surface, densely listed |
 | [`agent/JSA_RECIPES.md`](./agent/JSA_RECIPES.md)                           | Always — correct patterns for common tasks      |
 | [`agent/JSA_MANIFEST.md`](./agent/JSA_MANIFEST.md)                         | When touching menus, toolbars, or window config |
 | [`css-demo/README.md`](./css-demo/README.md)                               | When building a visible UI                      |
@@ -76,6 +76,14 @@ samples. A new extension that follows them reads as if it belongs.
 Full detail is in the `agent/` docs; these are the ones that bite hardest.
 
 - **Units are inches. Z is up.** X/Y is the ground plane. Angles are radians.
+- **When the user thinks in feet, meters or millimeters, use `Length`, not
+  arithmetic.** A bare number is always inches, so say what you mean:
+  `SketchUpApi.Length.meters(2.5)`, or `Length.parse(userText, model)` for text
+  the user typed (it honors the model's unit settings, and returns `undefined`
+  for input that isn't a length). A `Length` is accepted anywhere a distance is —
+  point coordinates, `facePushPull`, circle radii. Never write `* 39.37`. See
+  "Working with Units and Length" in `agent/JSA_RECIPES.md` and the
+  [`Length` docs](https://developer.trimble.com/docs/sketchup/jsa/api/classes/length/).
 - **Every model mutation goes inside `model.performOperation(fn, 'Name')`.** That
   makes it one undo step. The name string appears in Edit > Undo.
 - **Ground-plane faces point down**, so a _negative_ push-pull distance extrudes
