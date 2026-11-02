@@ -35,9 +35,7 @@ Live docs (the source of truth): the [API Reference](https://developer.trimble.c
 
 Constructors and enums for plain-JavaScript (script-tag) pages — `new SketchUpApi.Point3d(1, 2, 3)`, `SketchUpApi.EntityType.Face`:
 
-`AreaUnit`, `BoundingBox`, `Camera`, `CameraType`, `ChangeSource`, `Color`, `ComponentSnapTo`, `CRSLocation`, `CRSScale`, `DimensionAlignedTextPosition`, `DimensionArrowType`, `DimensionTextPosition`, `EdgeColorMode`, `EdgeDisplayMode`, `EdgeType`, `EdgeUsageType`, `EntityType`, `FacePointClassification`, `InstancePath`, `Length`, `LengthFormat`, `LengthUnit`, `MaterialColorizeType`, `MaterialNormalStyle`, `MaterialOwnerType`, `MaterialTextureType`, `MaterialType`, `MaterialWorkflow`, `OperationAbortStrategy`, `OperationStatus`, `Plane`, `Point3d`, `RenderMode`, `TextArrowType`, `TextLeaderType`, `Transformation`, `TransparencySort`, `Vector3d`, `VolumeUnit`. Also `SketchUpApi.Constants` (scene property flags), `SketchUpApi.ui`, `SketchUpApi.version`.
-
-`Ray3d` and `Point2d` are exported by the TypeScript package but are **not** on this namespace, so a script-tag page can't construct them directly.
+`AreaUnit`, `BoundingBox`, `Camera`, `CameraType`, `ChangeSource`, `Color`, `ComponentSnapTo`, `CRSLocation`, `CRSScale`, `DimensionAlignedTextPosition`, `DimensionArrowType`, `DimensionTextPosition`, `EdgeColorMode`, `EdgeDisplayMode`, `EdgeType`, `EdgeUsageType`, `EntityType`, `FacePointClassification`, `InstancePath`, `Length`, `LengthFormat`, `LengthUnit`, `MaterialColorizeType`, `MaterialNormalStyle`, `MaterialOwnerType`, `MaterialTextureType`, `MaterialType`, `MaterialWorkflow`, `OperationAbortStrategy`, `OperationStatus`, `Plane`, `Point2d`, `Point3d`, `Ray3d`, `RenderMode`, `TextArrowType`, `TextLeaderType`, `Transformation`, `TransparencySort`, `Vector3d`, `VolumeUnit`. Also `SketchUpApi.Constants` (scene property flags), `SketchUpApi.ui`, `SketchUpApi.version`.
 
 ---
 
@@ -330,7 +328,7 @@ Properties: `readonly currentStatus: "open" | "committed" | "aborted" | "closed_
 - `tagSetVisible(ref: TagRef | Tag, visible: boolean): void`
 
 **Also on Operation** (names only; signatures on the [Operation class page](https://developer.trimble.com/docs/sketchup/jsa/api/classes/operation/)):
-- Shadow info setters (see `ShadowInfo`): `shadowInfoSetCity`, `shadowInfoSetCountry`, `shadowInfoSetDark`, `shadowInfoSetDaylightSavings`, `shadowInfoSetDisplayNorth`, `shadowInfoSetDisplayOnAllFaces`, `shadowInfoSetDisplayOnGroundPlane`, `shadowInfoSetDisplayShadows`, `shadowInfoSetEdgesCastShadows`, `shadowInfoSetLatitude`, `shadowInfoSetLight`, `shadowInfoSetLongitude`, `shadowInfoSetNorthAngle`, `shadowInfoSetShadowTimeEpochSeconds`, `shadowInfoSetTZOffset`, `shadowInfoSetUseSunForAllShading`
+- Shadow info setters (see `ShadowInfo`): `shadowInfoSetCity`, `shadowInfoSetCountry`, `shadowInfoSetDark`, `shadowInfoSetDaylightSavings`, `shadowInfoSetDisplayNorth`, `shadowInfoSetDisplayOnAllFaces`, `shadowInfoSetDisplayOnGroundPlane`, `shadowInfoSetDisplayShadows`, `shadowInfoSetEdgesCastShadows`, `shadowInfoSetLatitude`, `shadowInfoSetLight`, `shadowInfoSetLongitude`, `shadowInfoSetNorthAngle`, `shadowInfoSetShadowTimestamp`, `shadowInfoSetTZOffset`, `shadowInfoSetUseSunForAllShading`
 - Dimensions: `createDimensionLinear`, `createDimensionRadial`, `dimensionLinearSetAlignedTextPosition`, `dimensionLinearSetEnd`, `dimensionLinearSetOffset`, `dimensionLinearSetStart`, `dimensionLinearSetTextPosition`, `dimensionRadialSetArcCurve`, `dimensionRadialSetLeaderBreakPoint`, `dimensionSetArrowType`, `dimensionSetHasAlignedText`, `dimensionSetText`
 - Text: `createText`, `textSetArrowType`, `textSetAttachedTo`, `textSetDisplayLeader`, `textSetLeaderType`, `textSetLineWeight`, `textSetPoint`, `textSetText`, `textSetVector`
 - Construction guides: `constructionLineReverse`, `constructionLineSetDirection`, `constructionLineSetEnd`, `constructionLineSetPosition`, `constructionLineSetStart`, `constructionLineSetStipple`, `createConstructionLine`, `createConstructionPoint`
@@ -482,6 +480,7 @@ Properties: `readonly a: number`, `readonly b: number`, `readonly c: number`, `r
 ### Ray3d
 Represents an immutable ray (or line) in 3d coordinates
 Properties: `readonly direction: Vector3d`, `readonly origin: Point3d`
+- `constructor(origin: Point3d, direction: Vector3d)` — direction is normalized; throws if zero-length
 - `static between(start: Readonly<Point3Like>, end: Readonly<Point3Like>): Ray3d`
 - `static create(input: Readonly<Ray3dLike>): Ray3d`
 - `projectPoint(point: Readonly<Point3Like>): Point3d`
@@ -860,7 +859,7 @@ Access to the SketchUp viewport — camera, screenshots, and view dimensions.
 
 **Also available** (one line each; full details in the [API Reference](https://developer.trimble.com/docs/sketchup/jsa/api/overview/)):
 
-- `ShadowInfo` — A snapshot of SketchUp's shadow and sun settings.
+- `ShadowInfo` — A snapshot of SketchUp's shadow and sun settings. Times are `shadowTimestamp`, `sunRiseTimestamp`, `sunSetTimestamp` (epoch seconds); the old `*_time_t` names are deprecated.
 - `ViewInfo` — Represents a snapshot of the Sketchup view
 - `CameraData`
 - `ParallelCameraData` — Represents a parallel camera

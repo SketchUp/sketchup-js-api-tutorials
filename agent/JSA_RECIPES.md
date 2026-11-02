@@ -953,6 +953,7 @@ console.log('Dark value:', shadowInfo.dark);
 console.log('Light value:', shadowInfo.light);
 console.log('Latitude:', shadowInfo.latitude);
 console.log('Longitude:', shadowInfo.longitude);
+console.log('Sun time:', shadowInfo.shadowTimestamp, 'sunrise:', shadowInfo.sunRiseTimestamp, 'sunset:', shadowInfo.sunSetTimestamp); // epoch seconds
 
 // Set shadow info for specific scene
 await model.performOperation(async (op) => {
@@ -987,7 +988,7 @@ await model.performOperation(async (op) => {
   op.shadowInfoSetDisplayNorth(true, scene);
 
   // Sun time (Unix epoch seconds)
-  op.shadowInfoSetShadowTimeEpochSeconds(1625140800, scene); // July 1, 2021 12:00 PM
+  op.shadowInfoSetShadowTimestamp(1625140800, scene); // July 1, 2021 12:00 PM
 }, 'Configure shadows');
 ```
 
@@ -1984,9 +1985,21 @@ console.log('Width:', bbox.width, 'Height:', bbox.height, 'Depth:', bbox.depth);
 Anywhere a method parameter is typed `Point3Like` or `Vector3Like` (for example
 `op.createFace`, `op.createCircle`, `Transformation.translation`) you can pass
 a `Point3d`/`Vector3d`, an `[x, y, z]` / `[x, y]` array, or an `{ x, y, z }`
-object. `Ray3d`, `Plane.create()` and `Transformation.create()` exist too, see
-the [API Reference](https://developer.trimble.com/docs/sketchup/jsa/api/overview/);
-`Ray3d` is not on the `SketchUpApi` global.
+object. `Plane.create()` and `Transformation.create()` exist too, see
+the [API Reference](https://developer.trimble.com/docs/sketchup/jsa/api/overview/).
+
+`Ray3d` (an origin and a direction) and `Point2d` are on the `SketchUpApi`
+global too:
+
+```javascript
+const ray = new SketchUpApi.Ray3d(
+  new SketchUpApi.Point3d(0, 0, 0),
+  new SketchUpApi.Vector3d(0, 0, 1)
+);
+const between = SketchUpApi.Ray3d.between([0, 0, 0], [2, 2, 2]); // from two points
+const closest = new SketchUpApi.Point3d(5, 0, 3).projectToLine(ray); // Point3d(0, 0, 3)
+const p2 = new SketchUpApi.Point2d(0, 1);
+```
 
 ---
 
