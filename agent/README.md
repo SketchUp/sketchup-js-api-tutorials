@@ -10,6 +10,9 @@ and its [API Reference](https://developer.trimble.com/docs/sketchup/jsa/api/over
 is the source of truth for every class. If these files and the live docs ever
 disagree, trust the live docs.
 
+_Last synced to JSA SDK 2.39.2. To update, read the newer entries in the
+[Release Notes](https://developer.trimble.com/docs/sketchup/jsa/welcome/change-log/)._
+
 ## Files
 
 | File | Purpose |
